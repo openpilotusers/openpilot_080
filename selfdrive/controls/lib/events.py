@@ -214,13 +214,13 @@ def standstill_alert(CP, sm, metric):
 
   if elapsed_time_min == 0:
     return Alert(
-      "잠시 멈춤 (경과시간: %2d초)" % (elapsed_time_sec),
+      "잠시 멈춤 (경과시간: %02d초)" % (elapsed_time_sec),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.5)
   else:
     return Alert(
-      "잠시 멈춤 (경과시간: %d분 %2d초)" % (elapsed_time_min, elapsed_time_sec),
+      "잠시 멈춤 (경과시간: %d분 %02d초)" % (elapsed_time_min, elapsed_time_sec),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.5)
