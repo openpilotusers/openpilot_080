@@ -26,6 +26,7 @@ class CarState(CarStateBase):
     self.mdps_error_cnt = 0
     self.spas_enabled = CP.spasEnabled
     self.acc_active = False
+    self.cruiseState_standstill = False
     
     self.cruiseState_modeSel = 0
     self.SC = SpdController()
@@ -97,6 +98,7 @@ class CarState(CarStateBase):
     ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
                                       cp.vl['EMS16']['CRUISE_LAMP_M'] != 0
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4 if not self.no_radar else False
+    self.cruiseState_standstill = ret.cruiseState.standstill
     self.is_set_speed_in_mph = bool(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
     
     self.acc_active = ret.cruiseState.enabled

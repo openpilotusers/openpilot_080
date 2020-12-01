@@ -125,6 +125,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     modeChangeDistance @99;
     modeChangeOneway @100;
     needBrake @101;
+    standStill @102;
   }
 }
 
@@ -199,6 +200,7 @@ struct CarState {
   tpmsPressureRr @40 :Float32;
 
   radarDistance @41 :Float32;
+  standStill @42 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -446,6 +448,7 @@ struct CarParams {
   sasBus @52: Int8;
   sccBus @53: Int8;
   spasEnabled @54: Bool;
+  standStill @55: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);

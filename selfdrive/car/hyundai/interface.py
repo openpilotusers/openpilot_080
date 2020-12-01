@@ -194,6 +194,8 @@ class CarInterface(CarInterfaceBase):
     ret.stoppingControl = True
     ret.startAccel = 0.0
 
+    ret.standStill = False
+
     # ignore CAN2 address if L-CAN on the same BUS
     ret.mdpsBus = 1 if 593 in fingerprint[1] and 1296 not in fingerprint[1] else 0
     ret.sasBus = 1 if 688 in fingerprint[1] and 1296 not in fingerprint[1] else 0
@@ -274,6 +276,11 @@ class CarInterface(CarInterfaceBase):
     #  events.add(EventName.driverSteering)
     if self.CC.need_brake:
       events.add(EventName.needBrake)
+    if self.CS.cruiseState_standstill:
+      events.add(EventName.standStill)
+      self.CP.standStill = True
+    else:
+      self.CP.standStill = False
 
     if self.CC.mode_change_timer and self.CS.out.cruiseState.modeSel == 0:
       events.add(EventName.modeChangeOpenpilot)

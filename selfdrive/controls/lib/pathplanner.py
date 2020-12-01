@@ -10,7 +10,6 @@ from selfdrive.config import Conversions as CV
 from common.params import Params
 import cereal.messaging as messaging
 from cereal import car, log
-import common.log as trace1
 
 LaneChangeState = log.PathPlan.LaneChangeState
 LaneChangeDirection = log.PathPlan.LaneChangeDirection
@@ -100,6 +99,8 @@ class PathPlanner():
 
     self.angle_offset_select = int(Params().get('OpkrAngleOffsetSelect'))
 
+    self.standstill_elapsed_time = 1.0
+
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
     self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.LANE, MPC_COST_LAT.HEADING, self.steer_rate_cost)
@@ -118,6 +119,7 @@ class PathPlanner():
 
   def update(self, sm, pm, CP, VM):
     v_ego = sm['carState'].vEgo
+    stand_still = sm['carState'].standStill
     angle_steers = sm['carState'].steeringAngle
     active = sm['controlsState'].active
     anglesteer_current = sm['controlsState'].angleSteers
@@ -314,6 +316,12 @@ class PathPlanner():
     plan_send.pathPlan.steerActuatorDelay = self.new_steer_actuator_delay
     plan_send.pathPlan.steerRateCost = self.new_steer_rate_cost
     plan_send.pathPlan.outputScale = output_scale
+
+    if stand_still:
+      self.standstill_elapsed_time += DT_MDL
+    else:
+      self.standstill_elapsed_time = 1
+    plan_send.pathPlan.standstillElapsedTime = int(self.standstill_elapsed_time)
 
     pm.send('pathPlan', plan_send)
 
