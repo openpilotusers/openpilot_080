@@ -686,20 +686,6 @@ static void ui_draw_driver_view(UIState *s) {
   ui_draw_circle_image(s->vg, x, y, face_size-5, s->img_face, scene->dmonitoring_state.getFaceDetected());
 }
 
-static void ui_draw_vision_header(UIState *s) {
-  const Rect &viz_rect = s->scene.viz_rect;
-  NVGpaint gradient = nvgLinearGradient(s->vg, viz_rect.x,
-                        viz_rect.y+(header_h-(header_h/2.5)),
-                        viz_rect.x, viz_rect.y+header_h,
-                        nvgRGBAf(0,0,0,0.45), nvgRGBAf(0,0,0,0));
-
-  ui_draw_rect(s->vg, viz_rect.x, viz_rect.y, viz_rect.w, header_h, gradient);
-
-  ui_draw_vision_maxspeed(s);
-  ui_draw_vision_speed(s);
-  ui_draw_vision_event(s);
-}
-
 //BB START: functions added for the display of various items
 static int bb_ui_draw_measure(UIState *s,  const char* bb_value, const char* bb_uom, const char* bb_label,
     int bb_x, int bb_y, int bb_uom_dx,
@@ -1008,6 +994,8 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
     nvgStroke(s->vg);
 }
 
+//BB END: functions added for the display of various items
+
 static void bb_ui_draw_UI(UIState *s)
 {
   const UIScene *scene = &s->scene;
@@ -1023,7 +1011,21 @@ static void bb_ui_draw_UI(UIState *s)
   bb_ui_draw_measures_left(s, bb_dmr_x, bb_dmr_y-20, bb_dmr_w);
 }
 
-//BB END: functions added for the display of various items
+static void ui_draw_vision_header(UIState *s) {
+  const Rect &viz_rect = s->scene.viz_rect;
+  NVGpaint gradient = nvgLinearGradient(s->vg, viz_rect.x,
+                        viz_rect.y+(header_h-(header_h/2.5)),
+                        viz_rect.x, viz_rect.y+header_h,
+                        nvgRGBAf(0,0,0,0.45), nvgRGBAf(0,0,0,0));
+
+  ui_draw_rect(s->vg, viz_rect.x, viz_rect.y, viz_rect.w, header_h, gradient);
+
+  ui_draw_vision_maxspeed(s);
+  ui_draw_vision_speed(s);
+  ui_draw_vision_event(s);
+  bb_ui_draw_UI(s);
+  ui_draw_tpms(s);
+}
 
 static void ui_draw_vision_car(UIState *s) {
   const UIScene *scene = &s->scene;
@@ -1091,8 +1093,6 @@ static void ui_draw_vision_footer(UIState *s) {
   nvgBeginPath(s->vg);
   nvgRect(s->vg, scene->viz_rect.x, s->scene.viz_rect.bottom(), scene->viz_rect.w, footer_h);
   ui_draw_vision_face(s);
-  bb_ui_draw_UI(s);
-  ui_draw_tpms(s);
   ui_draw_vision_car(s);
 }
 
