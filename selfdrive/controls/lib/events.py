@@ -209,8 +209,15 @@ def wrong_car_mode_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: boo
 
 def standstill_alert(CP, sm, metric):
   elapsed_time = sm['pathPlan'].standstillElapsedTime
+  if elapsed_time >= 60 and elapsed_time % 60 == 0:
+    elapsed_time_min += 1
+    elapsed_time = 0
+  elif elapsed_time >= 60:
+    elapsed_time = elapsed_time - (elapsed_time_min * 60)
+  elif elapsed_time < 60:
+    elapsed_time_min = 0
   return Alert(
-    "잠시 멈춤 (경과시간: %d초)" % elapsed_time,
+    "잠시 멈춤 (경과시간: %d초)" % (elapsed_time) if not elapsed_time_min else "잠시 멈춤 (경과시간: %d분%d초)" % (elapsed_time_min, elapsed_time),
     "",
     AlertStatus.normal, AlertSize.small,
     Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.5)
