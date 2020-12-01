@@ -69,6 +69,7 @@ class CarState(CarStateBase):
     ret.vEgo = cp.vl["CLU11"]["CF_Clu_Vanz"] * CV.KPH_TO_MS
 
     ret.standstill = ret.vEgoRaw < 0.1
+    ret.standStill = self.CP.standStill
 
     ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle'] - self.steer_anglecorrection
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
