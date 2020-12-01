@@ -99,7 +99,7 @@ class PathPlanner():
 
     self.angle_offset_select = int(Params().get('OpkrAngleOffsetSelect'))
 
-    self.standstill_elapsed_time = 1.0
+    self.standstill_elapsed_time = 0.0
 
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
@@ -320,7 +320,7 @@ class PathPlanner():
     if stand_still:
       self.standstill_elapsed_time += DT_MDL
     else:
-      self.standstill_elapsed_time = 1
+      self.standstill_elapsed_time = 0.0
     plan_send.pathPlan.standstillElapsedTime = int(self.standstill_elapsed_time)
 
     pm.send('pathPlan', plan_send)
