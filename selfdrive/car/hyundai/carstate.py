@@ -37,6 +37,7 @@ class CarState(CarStateBase):
     self.steer_anglecorrection = int(Params().get('OpkrSteerAngleCorrection')) * 0.1
     self.cruise_gap = int(Params().get('OpkrCruiseGapSet'))
 
+    self.pm = messaging.PubMaster(['dynamicFollowButton'])
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.CP.mdpsHarness else cp
     cp_sas = cp2 if self.CP.sasBus else cp
