@@ -152,10 +152,6 @@ class LongControl():
       output_gb = clip(output_gb, -brake_max, gas_max)
 
       self.reset(CS.vEgo)
-      if CS.gasPressed:
-        self.v_pid = v_ego_pid
-        self.pid.reset()
-        output_gb = 0.
 
     # Intention is to move again, release brake fast before handing control to PID
     elif self.long_control_state == LongCtrlState.starting:
