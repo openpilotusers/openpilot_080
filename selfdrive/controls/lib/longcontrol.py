@@ -63,7 +63,7 @@ class LongControl():
   def __init__(self, CP, compute_gb, candidate):
     self.long_control_state = LongCtrlState.off  # initialized to off
     kdBP = [0., 16., 35.]
-    kdV = [0.08, 1.4, 1.5]
+    kdV = [0.1, 0.5, 0.8]
     self.pid = LongPIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                                  (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
                                  (kdBP, kdV),
@@ -127,12 +127,14 @@ class LongControl():
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
-      if hasLead and radarState.leadOne.status and 1 < dRel < 26 and vRel < 0 and (CS.vEgo * CV.MS_TO_KPH) > (dRel+7) and output_gb < 0:
-        output_gb -= abs(vRel*0.1*3.6)
+      if hasLead and radarState.leadOne.status and 1 < dRel < 25 and vRel < 0 and (CS.vEgo * CV.MS_TO_KPH) > (dRel+8) and output_gb < 0:
+        ofactor = 1
+        ofactor = interp(dRel,[1,12,25], [2.5,1.75,1])
+        output_gb *= ofactor
         output_gb = clip(output_gb, -brake_max, gas_max)
 
       if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
-        output_gb += 0.03 * dRel
+        output_gb += 0.02 * dRel
         output_gb = clip(output_gb, -brake_max, gas_max)
 
       if prevent_overshoot:
