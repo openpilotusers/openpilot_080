@@ -90,7 +90,7 @@ class Controls:
     print("Waiting for CAN messages...")
     get_one_can(self.can_sock)
 
-    self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'])
+    self.CI, self.CP, candidate = get_car(self.can_sock, self.pm.sock['sendcan'])
     threading.Thread(target=log_fingerprint, args=[candidate]).start()
 
     # read params
