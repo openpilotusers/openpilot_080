@@ -302,16 +302,16 @@ class DynamicFollow:
       self.profile_change_time = sec_since_boot()
     self.last_effective_profile = df_profile
 
-    if df_profile == self.df_profiles.far:
+    if df_profile == self.df_profiles.roadtrip:
       y_dist = [1.3978, 1.4132, 1.4318, 1.4536, 1.485, 1.5229, 1.5819, 1.6203, 1.7238, 1.8231, 1.8379, 1.8495, 1.8535]  # TRs
       profile_mod_pos = [0.92, 0.7, 0.25, 0.15]
       profile_mod_neg = [1.1, 1.3, 2.0, 2.3]
-    elif df_profile == self.df_profiles.close:  # for in congested traffic
+    elif df_profile == self.df_profiles.traffic:  # for in congested traffic
       x_vel = [0.0, 1.892, 3.7432, 5.8632, 8.0727, 10.7301, 14.343, 17.6275, 22.4049, 28.6752, 34.8858, 40.35]
       y_dist = [1.3781, 1.3791, 1.3457, 1.3134, 1.3145, 1.318, 1.3485, 1.257, 1.144, 0.979, 0.9461, 0.9156]
       profile_mod_pos = [1.05, 1.55, 2.6, 3.75]
       profile_mod_neg = [0.84, .275, 0.1, 0.05]
-    elif df_profile == self.df_profiles.normal:  # default to relaxed/stock
+    elif df_profile == self.df_profiles.relaxed:  # default to relaxed/stock
       y_dist = [1.385, 1.394, 1.406, 1.421, 1.444, 1.474, 1.516, 1.534, 1.546, 1.568, 1.579, 1.593, 1.614]
       profile_mod_pos = [1.0] * 4
       profile_mod_neg = [1.0] * 4
@@ -360,7 +360,7 @@ class DynamicFollow:
     TR_mod = sum([mod * profile_mod_neg if mod < 0 else mod * profile_mod_pos for mod in TR_mods])  # alter TR modification according to profile
     TR += TR_mod
 
-    if self.car_data.left_blinker or self.car_data.right_blinker and df_profile != self.df_profiles.close:
+    if self.car_data.left_blinker or self.car_data.right_blinker and df_profile != self.df_profiles.traffic:
       x = [8.9408, 22.352, 31.2928]  # 20, 50, 70 mph
       y = [1.0, .75, .65]  # reduce TR when changing lanes
       TR *= interp(self.car_data.v_ego, x, y)
