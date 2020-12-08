@@ -110,7 +110,7 @@ class LongControl():
                                                        CS.brakePressed, CS.cruiseState.standstill, stop, CS.gasPressed)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
-    if self.long_control_state == LongCtrlState.off or CS.brakePressed or CS.gasPressed:
+    if self.long_control_state == LongCtrlState.off or (CS.brakePressed or CS.gasPressed):
       self.v_pid = v_ego_pid
       self.pid.reset()
       output_gb = 0.
@@ -152,6 +152,10 @@ class LongControl():
       output_gb = clip(output_gb, -brake_max, gas_max)
 
       self.reset(CS.vEgo)
+      if CS.gasPressed:
+        self.v_pid = v_ego_pid
+        self.pid.reset()
+        output_gb = 0.
 
     # Intention is to move again, release brake fast before handing control to PID
     elif self.long_control_state == LongCtrlState.starting:
