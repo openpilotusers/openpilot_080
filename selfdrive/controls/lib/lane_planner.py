@@ -1,6 +1,6 @@
 from common.numpy_fast import interp
 import numpy as np
-from cereal import log
+from cereal import car, log
 from common.params import Params
 
 CAMERA_OFFSET = int(Params().get('CameraOffsetAdj')) * 0.001  # m from center car to camera
@@ -64,7 +64,7 @@ class LanePlanner:
       self.l_lane_change_prob = md.meta.desireState[log.PathPlan.Desire.laneChangeLeft]
       self.r_lane_change_prob = md.meta.desireState[log.PathPlan.Desire.laneChangeRight]
 
-  def update_d_poly(self, v_ego):
+  def update_d_poly(self, v_ego, sm):
     curvature = sm['controlsState'].curvature
     Curv = round(curvature, 4)
     Poly_differ = round(abs(self.l_poly[3] + self.r_poly[3]), 2)
