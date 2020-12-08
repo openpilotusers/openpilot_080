@@ -110,9 +110,9 @@ class LongControl():
                                                        CS.brakePressed, CS.cruiseState.standstill, stop, CS.gasPressed)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
-
-    if self.long_control_state == LongCtrlState.off or CS.gasPressed:
-      self.reset(v_ego_pid)
+    if self.long_control_state == LongCtrlState.off or CS.brakePressed or CS.gasPressed:
+      self.v_pid = v_ego_pid
+      self.pid.reset()
       output_gb = 0.
 
     # tracking objects and driving
@@ -160,7 +160,8 @@ class LongControl():
         factor = interp(dRel,[0.0,2.0,3.0,4.0,6.0], [0.0,0.5,0.75,1.0,100.0])
       if output_gb < -0.2:
         output_gb += STARTING_BRAKE_RATE / RATE * factor
-      self.reset(CS.vEgo)
+      self.v_pid = CS.vEgo
+      self.pid.reset()
 
     self.last_output_gb = output_gb
     final_gas = clip(output_gb, 0., gas_max)
