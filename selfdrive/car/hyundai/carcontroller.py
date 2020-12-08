@@ -312,14 +312,14 @@ class CarController():
       self.vdiff = 0.
       self.resumebuttoncnt = 0
 
-    if CS.out.vEgo < 2.:
+    if CS.out.vEgo < 1 * CV.MS_TO_KPH:
       self.sm.update(0)
       long_control_state = self.sm['controlsState'].longControlState
       self.acc_standstill = True if long_control_state == LongCtrlState.stopping else False
       if self.acc_standstill == True:
         self.acc_standstill_timer += 1
-        if self.acc_standstill_timer >= 100:
-          self.acc_standstill_timer = 100
+        if self.acc_standstill_timer >= 200:
+          self.acc_standstill_timer = 200
       else:
         self.acc_standstill_timer = 0
     else:
