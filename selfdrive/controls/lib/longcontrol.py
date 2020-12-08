@@ -131,7 +131,7 @@ class LongControl():
         output_gb -= abs(vRel*0.1)
         output_gb = clip(output_gb, -brake_max, gas_max)
 
-      if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < dRel-2 and output_gb < -0.2:
+      if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
         output_gb += 0.03 * dRel
         output_gb = clip(output_gb, -brake_max, gas_max)
 
@@ -175,7 +175,7 @@ class LongControl():
     else:
       self.long_stat = "---"
 
-    str_log3 = 'LS={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:+04.2f}  TG=P:{:05.2f}/V:{:05.2f}/F:{:05.2f}/A:{:+04.2f}  GS={}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.v_pid, v_target, abs(v_target_future), a_target, CS.gasPressed)
+    str_log3 = 'LS={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:+04.2f}  TG=P:{:05.2f}/V:{:05.2f}  GS={}  L={}/{}/{:04.1f}/{:+04.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.v_pid, v_target, CS.gasPressed, hasLead, radarState.leadOne.status, dRel, vRel)
     trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake
