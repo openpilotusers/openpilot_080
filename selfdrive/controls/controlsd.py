@@ -283,8 +283,8 @@ class Controls:
     self.AM.SA_set_enabled(self.enabled)
     # alert priority is defined by code location, keeping is highest, then lane speed alert, then auto-df alert
     if self.sm_smiskol['modelLongButton'].enabled != self.last_model_long:
-      extra_text_1 = 'disabled!' if self.last_model_long else 'enabled!'
-      extra_text_2 = '' if self.last_model_long else ', model may behave unexpectedly'
+      extra_text_1 = '비활성화!' if self.last_model_long else '활성화!'
+      extra_text_2 = '' if self.last_model_long else ', 모델이 예기치 않게 작동할 수 있음'
       self.AM.SA_add('modelLongAlert', extra_text_1=extra_text_1, extra_text_2=extra_text_2)
       return
 
@@ -318,7 +318,7 @@ class Controls:
           self.AM.SA_add(df_alert, extra_text_1=df_out.model_profile_text + ' (auto)')
           return
       else:
-        self.AM.SA_add(df_alert, extra_text_1=df_out.user_profile_text, extra_text_2='Dynamic follow: {} profile active'.format(df_out.user_profile_text))
+        self.AM.SA_add(df_alert, extra_text_1=df_out.user_profile_text, extra_text_2='동적차간거리조절: {} 프로파일 활성화됨'.format(df_out.user_profile_text))
         return
 
   def data_sample(self):

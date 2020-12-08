@@ -233,14 +233,14 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
 'modelLongAlert': {
     ET.PERMANENT: Alert(
       "MODEL LONG ",
-      "사용에 주의하세요",
+      "사용 주의",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning1, .4, 0., 1.5),
   },
 
   'dfButtonAlert': {
     ET.PERMANENT: Alert(
-      "프로파일: ",
+      "차간프로파일: ",
       "",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning1, .4, 0., 1.5),
