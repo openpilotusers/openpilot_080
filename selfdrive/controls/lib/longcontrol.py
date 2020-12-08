@@ -130,13 +130,13 @@ class LongControl():
 
       if hasLead and radarState.leadOne.status and 1 < dRel < 25 and vRel < 0 and (CS.vEgo * CV.MS_TO_KPH) > (dRel+8) and output_gb < 0:
         ofactor = 1
-        ofactor = interp(dRel,[1,12.5,25], [2,1.5,1])
+        ofactor = interp(dRel,[1,12.5,25], [2.5,1.75,1])
         output_gb *= ofactor
         output_gb = clip(output_gb, -brake_max, gas_max)
 
-      if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
-        output_gb += 0.02 * dRel
-        output_gb = clip(output_gb, -brake_max, gas_max)
+      #if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
+      #  output_gb += 0.02 * dRel
+      #  output_gb = clip(output_gb, -brake_max, gas_max)
 
       if prevent_overshoot:
         output_gb = min(output_gb, 0.0)
