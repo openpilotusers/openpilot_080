@@ -127,12 +127,12 @@ class LongControl():
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
-      if hasLead and radarState.leadOne.status and 6 < dRel < 23 and vRel < -3 and (CS.vEgo * CV.MS_TO_KPH) > (dRel+7) and output_gb < -0.5:
-        output_gb -= 0.5
+      if hasLead and radarState.leadOne.status and 4 < dRel < 23 and vRel < -3 and (CS.vEgo * CV.MS_TO_KPH) > (dRel+7) and output_gb < -0.5:
+        output_gb -= abs(vRel*0.1)
         output_gb = clip(output_gb, -brake_max, gas_max)
 
-      if hasLead and radarState.leadOne.status and 4 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < dRel-2 and output_gb < -0.1:
-        output_gb += 0.05 * dRel
+      if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < dRel-2 and output_gb < -0.2:
+        output_gb += 0.03 * dRel
         output_gb = clip(output_gb, -brake_max, gas_max)
 
       if prevent_overshoot:
@@ -143,7 +143,7 @@ class LongControl():
       # Keep applying brakes until the car is stopped
       factor = 1
       if hasLead:
-        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [3,2,1.0,0.7,0.5,0.3,0.0])
+        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [5,3,2,0.7,0.5,0.3,0.0])
       if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= STOPPING_BRAKE_RATE / RATE * factor
       output_gb = clip(output_gb, -brake_max, gas_max)
