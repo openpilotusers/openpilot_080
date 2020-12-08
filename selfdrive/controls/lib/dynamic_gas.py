@@ -1,5 +1,6 @@
 from selfdrive.car.toyota.values import CAR as CAR_TOYOTA
 from selfdrive.car.honda.values import CAR as CAR_HONDA
+from selfdrive.car.hyundai.values import CAR as CAR_HYUNDAI
 from common.numpy_fast import clip, interp
 import numpy as np
 
@@ -8,6 +9,7 @@ class DynamicGas:
   def __init__(self, CP, candidate):
     self.toyota_candidates = [attr for attr in dir(CAR_TOYOTA) if not attr.startswith("__")]
     self.honda_candidates = [attr for attr in dir(CAR_HONDA) if not attr.startswith("__")]
+    self.hyundai_candidates = [attr for attr in dir(CAR_HYUNDAI) if not attr.startswith("__")]
 
     self.candidate = candidate
     self.CP = CP
@@ -26,8 +28,8 @@ class DynamicGas:
       return float(interp(v_ego, self.CP.gasMaxBP, self.CP.gasMaxV))
 
     gas = interp(v_ego, self.gasMaxBP, self.gasMaxV)
-    if self.lead_data['status']:  # if lead
-      if v_ego <= 8.9408:  # if under 20 mph
+    if self.lead_data['status']:  # if lead car
+      if v_ego <= 8.9408:  # if under 20 mph(32km/h),
         x = [0.0, 0.24588812499999999, 0.432818589, 0.593044697, 0.730381365, 1.050833588, 1.3965, 1.714627481]  # relative velocity mod
         y = [0.9901, 0.905, 0.8045, 0.625, 0.431, 0.2083, .0667, 0]
         gas_mod = -(gas * interp(self.lead_data['v_rel'], x, y))
@@ -64,12 +66,12 @@ class DynamicGas:
           y = [1.0, 1.2875, 1.4625]
           gas *= interp(v_ego, x, y)
 
-    return float(clip(gas, 0.0, 1.0))
+    return float(clip(gas, 0.0, 2.0))
 
   def set_profile(self):
-    x = [0.0, 1.4082, 2.80311, 4.22661, 5.38271, 6.16561, 7.24781, 8.28308, 10.24465, 12.96402, 15.42303, 18.11903, 20.11703, 24.46614, 29.05805, 32.71015, 35.76326]
-    y = [0.234, 0.237, 0.246, 0.26, 0.279, 0.297, 0.332, 0.354, 0.368, 0.377, 0.389, 0.399, 0.411, 0.45, 0.504, 0.558, 0.617]
-    self.supported_car = False
+    x = [0.0, 1.4082, 2.8031, 4.2266, 5.3827, 6.1656, 7.2478, 8.2831, 10.2447, 12.964, 15.423, 18.119, 20.117, 24.4661, 29.0581, 32.7101, 35.7633]
+    y = [1.3, 1.304, 1.315, 1.342, 1.365, 1.386, 1.429, 1.454, 1.472, 1.48, 1.489, 1.421, 1.432, 1.480, 1.55, 1.621, 1.7]
+    self.supported_car = True
     if self.CP.enableGasInterceptor:
       if self.candidate == CAR_TOYOTA.COROLLA:
         x = [0.0, 1.4082, 2.8031, 4.2266, 5.3827, 6.1656, 7.2478, 8.2831, 10.2447, 12.964, 15.423, 18.119, 20.117, 24.4661, 29.0581, 32.7101, 35.7633]
@@ -88,13 +90,13 @@ class DynamicGas:
       else:  # all other pedal cars are supported
         # x, y = self.CP.gasMaxBP, self.CP.gasMaxV  # probably better to use custom maxGas above
         self.supported_car = True
-    else:
-      y = [0.35, 0.47, 0.43, 0.35, 0.3, 0.3, 0.3229, 0.34784, 0.36765, 0.38, 0.396, 0.409, 0.425, 0.478, 0.55, 0.621, 0.7]
-      if self.candidate in [CAR_TOYOTA.PRIUS_2020, CAR_TOYOTA.RAV4_TSS2]:
-        y = [i * (1 - 0.2) for i in y]
-      else:
-        y = [interp(i, [y[0], y[-1]], [1.15, 1.0]) * i for i in y]  # more gas at lower speeds
-      self.supported_car = True
+    #else:
+    #  y = [0.35, 0.47, 0.43, 0.35, 0.3, 0.3, 0.3229, 0.34784, 0.36765, 0.38, 0.396, 0.409, 0.425, 0.478, 0.55, 0.621, 0.7]
+    #  if self.candidate in [CAR_TOYOTA.PRIUS_2020, CAR_TOYOTA.RAV4_TSS2]:
+    #    y = [i * (1 - 0.2) for i in y]
+    #  else:
+    #    y = [interp(i, [y[0], y[-1]], [1.15, 1.0]) * i for i in y]  # more gas at lower speeds
+    #  self.supported_car = True
 
     self.gasMaxBP, self.gasMaxV = x, y
 
