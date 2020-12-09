@@ -133,6 +133,9 @@ class LongControl():
         dfactor = interp(dRel, [1,15,24], [2.5,1.75,1])
         output_gb *= dfactor
         output_gb = clip(output_gb, -brake_max, gas_max)
+      elif hasLead and radarState.leadOne.status and 50 < dRel < 150 and abs(vRel*3.6) < dRel and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) > 60 and (vRel*3.6) < -20:
+        output_gb *= 2
+        output_gb = clip(output_gb, -brake_max, gas_max)
 
       #if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
       #  output_gb += 0.02 * dRel
