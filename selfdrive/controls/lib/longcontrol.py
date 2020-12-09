@@ -130,13 +130,12 @@ class LongControl():
 
       if hasLead and radarState.leadOne.status and 1 < dRel < 25 and (CS.vEgo * CV.MS_TO_KPH) > dRel and output_gb < 0:
         rvfactor = 1
-        ofactor = 1
         vfactor = 1
-        ofactor = interp(dRel, [1,12.5,25], [2,1.5,1])
         vfactor = interp((CS.vEgo * CV.MS_TO_KPH), [1,30,60], [1,1.25,1.5])
         if vRel < 0:
-          rvfactor = interp(abs(vRel*3.6), [1,10,20], [1,1.5,2])
-        output_gb *= (ofactor*rvfactor*vfactor)
+          rvweight_distance = max(((CS.vEgo * CV.MS_TO_KPH) - dRel), 1)
+          rvfactor = interp(rvweight_distance, [1, 10, 20], [1, 1.5, 2])
+        output_gb *= (rvfactor*vfactor)
         output_gb = clip(output_gb, -brake_max, gas_max)
 
       #if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
