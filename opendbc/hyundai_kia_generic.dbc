@@ -1196,7 +1196,7 @@ BO_ 1313 GW_DDM_PE: 8 BCM
  SG_ C_RRDoorStatus : 6|2@1+ (1.0,0.0) [0.0|3.0] ""  CLU
  SG_ C_TrunkStatus : 8|2@1+ (1.0,0.0) [0.0|3.0] ""  CLU
  SG_ C_OSMirrorStatus : 10|2@1+ (1.0,0.0) [0.0|3.0] ""  CLU
- 
+
 BO_ 1056 SCC11: 8 SCC
  SG_ MainMode_ACC : 0|1@1+ (1,0) [0|1] "" CLU,EMS,ESC
  SG_ SCCInfoDisplay : 1|3@1+ (1,0) [0|7] "" CLU,ESC
@@ -1470,10 +1470,10 @@ BO_ 1186 FRT_RADAR11: 2 FCA
  SG_ CF_FCA_Equip_Front_Radar : 0|3@1+ (1,0) [0|7] "" LDWS_LKAS,LDW_LKA,ESC
 
 BO_ 905 SCC14: 8 SCC
- SG_ ComfortBandUpper : 0|6@1+ (1,0) [0|0] "m/s^2" ESC
- SG_ ComfortBandLower : 6|6@1+ (1,0) [0|0] "m/s^2" ESC
- SG_ JerkUpperLimit : 12|7@1+ (.1,0) [0|12.7] "m/s^3" ESC
- SG_ JerkLowerLimit : 19|7@1+ (1,0) [0|12.7] "m/s^3" ESC
+ SG_ ComfortBandUpper : 0|6@1+ (0.0986,-4.14) [0|1.26] "m/s^2" ESC
+ SG_ ComfortBandLower : 6|6@1+ (0.0986,-4.14) [0|1.26] "m/s^2" ESC
+ SG_ JerkUpperLimit : 12|7@1+ (1,0) [0|12.7] "m/s^3" ESC
+ SG_ JerkLowerLimit : 19|7@1+ (0.1,0) [0|12.7] "m/s^3" ESC
  SG_ ACCMode : 32|3@1+ (1,0) [0|7] "" CLU,HUD,LDWS_LKAS,ESC
  SG_ ObjGap : 56|8@1+ (1,0) [0|255] "" CLU,HUD,ESC
 
