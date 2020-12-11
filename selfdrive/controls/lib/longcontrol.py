@@ -130,7 +130,7 @@ class LongControl():
 
       if hasLead and radarState.leadOne.status and 6 < dRel < 25 and abs(vRel*3.6) <= (dRel+4) and output_gb < -0.5 and (CS.vEgo * CV.MS_TO_KPH) < 60:
         dfactor = 1
-        dfactor = interp(dRel, [6,21,25], [5,5,1])
+        dfactor = interp(dRel, [6,22,25], [7,5,1])
         output_gb -= (dfactor*0.1)
         output_gb = clip(output_gb, -brake_max, gas_max)
       elif hasLead and radarState.leadOne.status and 7 < dRel < 17 and abs(vRel*3.6) > 4 and output_gb > 0 and (CS.vEgo * CV.MS_TO_KPH) < 25:
@@ -145,7 +145,7 @@ class LongControl():
       # Keep applying brakes until the car is stopped
       factor = 1
       if hasLead:
-        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [5,3,1,0.7,0.5,0.3,0.0])
+        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [4,3,1,0.7,0.5,0.3,0.0])
       if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= STOPPING_BRAKE_RATE / RATE * factor
       output_gb = clip(output_gb, -brake_max, gas_max)
