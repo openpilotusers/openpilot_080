@@ -128,9 +128,9 @@ class LongControl():
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
-      if hasLead and radarState.leadOne.status and 1 < dRel < 25 and abs(vRel*3.6) < dRel and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) < 60:
+      if hasLead and radarState.leadOne.status and 7 <= dRel < 25 and abs(vRel*3.6) < dRel and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) < 60:
         dfactor = 1
-        dfactor = interp(dRel, [1,15,25], [3,2,1])
+        dfactor = interp(dRel, [7,16,25], [3,2,1])
         output_gb *= dfactor
         output_gb = clip(output_gb, -brake_max, gas_max)
       elif hasLead and radarState.leadOne.status and 45 < dRel < 100 and abs(vRel*3.6) < dRel and (CS.vEgo * CV.MS_TO_KPH) > 60 and (vRel*3.6) < -20:
