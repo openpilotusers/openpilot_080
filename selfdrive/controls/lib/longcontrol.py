@@ -25,12 +25,12 @@ RATE = 100.0
 
 
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, cruise_standstill, stop, gas_pressed, brake_hold):
+                             output_gb, brake_pressed, cruise_standstill, stop, gas_pressed):
   """Update longitudinal control state machine"""
   stopping_condition = stop or (v_ego < 0.3 and cruise_standstill) or \
                        (v_ego < STOPPING_EGO_SPEED and \
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
-                        brake_pressed or brake_hold))
+                        brake_pressed))
 
   starting_condition = v_target > STARTING_TARGET_SPEED and not cruise_standstill and (int(Params().get('OpkrAutoResume')) == 1 or gas_pressed)
 
@@ -107,7 +107,7 @@ class LongControl():
       stop = False
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.cruiseState.standstill, stop, CS.gasPressed, CS.brakeHold)
+                                                       CS.brakePressed, CS.cruiseState.standstill, stop, CS.gasPressed)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
     if self.long_control_state == LongCtrlState.off or (CS.brakePressed or CS.gasPressed):
@@ -149,7 +149,7 @@ class LongControl():
       # Keep applying brakes until the car is stopped
       factor = 1
       if hasLead:
-        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [5,3,1,0.7,0.5,0.3,0.0])
+        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [10,5,1,0.7,0.5,0.3,0.0])
       if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= STOPPING_BRAKE_RATE / RATE * factor
       output_gb = clip(output_gb, -brake_max, gas_max)
@@ -160,7 +160,7 @@ class LongControl():
     elif self.long_control_state == LongCtrlState.starting:
       factor = 1
       if hasLead:
-        factor = interp(dRel,[0.0,2.0,3.0,4.0,6.0], [0.0,0.5,0.75,1.0,100.0])
+        factor = interp(dRel,[0.0,2.0,3.0,4.0,6.0], [0.0,0.5,0.75,1.0,200.0])
       if output_gb < -0.2:
         output_gb += STARTING_BRAKE_RATE / RATE * factor
       self.reset(CS.vEgo)
