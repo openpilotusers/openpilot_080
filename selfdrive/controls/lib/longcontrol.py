@@ -128,11 +128,11 @@ class LongControl():
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
-      if hasLead and radarState.leadOne.status and 6 < dRel < 25 and abs(vRel*3.6) <= (dRel+4) and output_gb < -0.5 and (CS.vEgo * CV.MS_TO_KPH) < 60:
-        dfactor = 1
-        dfactor = interp(dRel, [6,22,25], [7,5,1])
-        output_gb -= (dfactor*0.1)
-        output_gb = clip(output_gb, -brake_max, gas_max)
+      if hasLead and radarState.leadOne.status and 3 < dRel < 25 and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) < 60:
+        vd_ratio = min((CS.vEgo / dRel), 2)
+        if vd_ratio >= 1:
+          output_gb *= vd_ratio
+          output_gb = clip(output_gb, -brake_max, gas_max)
       elif hasLead and radarState.leadOne.status and 7 < dRel < 17 and abs(vRel*3.6) > 4 and output_gb > 0 and (CS.vEgo * CV.MS_TO_KPH) < 25:
         output_gb *= 1.3
         output_gb = clip(output_gb, -brake_max, gas_max)
@@ -177,7 +177,7 @@ class LongControl():
     else:
       self.long_stat = "---"
 
-    str_log3 = 'LS={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:+04.2f}  TG=P:{:05.2f}/V:{:05.2f}  GS={}  BK={}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.v_pid, v_target, CS.gasPressed, CS.brakePressed)
+    str_log3 = 'LS={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:+04.2f}  TG=P:{:05.2f}/V:{:05.2f}/A:{:+04.2f}  GS={}  BK={}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.v_pid, v_target, a_target, CS.gasPressed, CS.brakePressed)
     trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake
