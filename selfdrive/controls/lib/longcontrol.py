@@ -102,7 +102,7 @@ class LongControl():
       dRel = radarState.leadOne.dRel
       vRel = radarState.leadOne.vRel
     if hasLead:
-      stop = True if (dRel < 3.5 and radarState.leadOne.status) else False
+      stop = True if (dRel < 4.0 and radarState.leadOne.status) else False
     else:
       stop = False
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
@@ -128,13 +128,19 @@ class LongControl():
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
-      if hasLead and radarState.leadOne.status and 7 <= dRel < 25 and abs(vRel*3.6) < dRel and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) < 60:
+      if hasLead and radarState.leadOne.status and 4 <= dRel < 25 and abs(vRel*3.6) <= dRel+3.5 and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) < 60:
         dfactor = 1
-        dfactor = interp(dRel, [7,16,25], [3,2,1])
+        dfactor = interp(dRel, [4,15,25], [3.5,2.25,1])
         output_gb *= dfactor
         output_gb = clip(output_gb, -brake_max, gas_max)
-      elif hasLead and radarState.leadOne.status and 45 < dRel < 100 and abs(vRel*3.6) < dRel and (CS.vEgo * CV.MS_TO_KPH) > 60 and (vRel*3.6) < -20:
-        output_gb -= 1
+      elif hasLead and radarState.leadOne.status and 4 <= dRel < 15 and 1 > abs(vRel*3.6) > 0 and output_gb >= 0 and (CS.vEgo * CV.MS_TO_KPH) < 30:
+        output_gb = 0
+        output_gb = clip(output_gb, -brake_max, gas_max)
+      elif hasLead and radarState.leadOne.status and 7 < dRel < 17 and abs(vRel*3.6) > 4 and output_gb > 0 and (CS.vEgo * CV.MS_TO_KPH) < 25:
+        output_gb *= 1.3
+        output_gb = clip(output_gb, -brake_max, gas_max)
+      elif hasLead and radarState.leadOne.status and 45 < dRel < 100 and abs(vRel*3.6) <= dRel+3.5 and (CS.vEgo * CV.MS_TO_KPH) > 50 and (vRel*3.6) < -20:
+        output_gb -= 1.5
         output_gb = clip(output_gb, -brake_max, gas_max)
 
       #if hasLead and radarState.leadOne.status and 4.5 < dRel < 6 and (CS.vEgo * CV.MS_TO_KPH) < (dRel-2) and output_gb < -0.2:
@@ -149,7 +155,7 @@ class LongControl():
       # Keep applying brakes until the car is stopped
       factor = 1
       if hasLead:
-        factor = interp(dRel,[2.0,3.0,3.5,5.0,6.0,7.0,8.0], [10,5,1,0.7,0.5,0.3,0.0])
+        factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [5,3,1,0.7,0.5,0.3,0.0])
       if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= STOPPING_BRAKE_RATE / RATE * factor
       output_gb = clip(output_gb, -brake_max, gas_max)
@@ -160,7 +166,7 @@ class LongControl():
     elif self.long_control_state == LongCtrlState.starting:
       factor = 1
       if hasLead:
-        factor = interp(dRel,[0.0,2.0,3.0,3.5,5.5], [0.0,0.5,0.75,1.0,1000.0])
+        factor = interp(dRel,[0.0,2.0,3.0,4.0,5.0], [0.0,0.5,0.75,1.0,1000.0])
       if output_gb < -0.2:
         output_gb += STARTING_BRAKE_RATE / RATE * factor
       self.reset(CS.vEgo)
