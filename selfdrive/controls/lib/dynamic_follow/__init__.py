@@ -353,7 +353,17 @@ class DynamicFollow:
     self.car_data.cruise_enabled = CS.cruiseState.enabled
 
   def _get_live_params(self):
-    self.global_df_mod = self.op_params.get('global_df_mod')
+    v_rel_dist = self.idf_v_rel.integrate(self.lead_data.v_lead - self.car_data.v_ego)
+    if v_rel_dist < 0:
+      self.global_df_mod += 0.05
+      if self.global_df_mod > 1.5:
+        self.global_df_mod = 1.5
+    else:
+      self.global_df_mod -= 0.1
+      if self.global_df_mod < 1.0:
+        self.global_df_mod = 1.
+    print('global_df_mod = {}'.format(self.global_df_mod))
+    #self.global_df_mod = self.op_params.get('global_df_mod')
     if self.global_df_mod != 1.:
       self.global_df_mod = clip(self.global_df_mod, 0.85, 1.5)
 
