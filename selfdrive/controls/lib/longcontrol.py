@@ -129,7 +129,7 @@ class LongControl():
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
       if hasLead and radarState.leadOne.status and 3 < dRel < 30 and output_gb < 0 and (CS.vEgo * CV.MS_TO_KPH) < 60 and (vRel*3.6) < -3:
-        vd_weight = interp(dRel, [3,10,20,30], [2,1.6,1.3,1])
+        vd_weight = interp(dRel, [3,10,20,30], [2.1,1.6,1.3,1])
         vd_ratio = min(((CS.vEgo*CV.MS_TO_KPH)/dRel), vd_weight)
         if vd_ratio > 1:
           output_gb *= vd_ratio
