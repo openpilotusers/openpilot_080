@@ -272,7 +272,7 @@ class DynamicFollow:
     This function modifies the y_dist list used by dynamic follow in accordance with global_df_mod
     It also intelligently adjusts the profile mods at each breakpoint based on the change in TR
     """
-    if self.global_df_mod is None:
+    if self.global_df_mod == 1.:
       return profile_mod_pos, profile_mod_neg, y_dist
     global_df_mod = 1 - self.global_df_mod
 
@@ -385,7 +385,7 @@ class DynamicFollow:
 
   def _get_live_params(self):
     self.global_df_mod = self.op_params.get('global_df_mod')
-    if self.global_df_mod is not None:
+    if self.global_df_mod != 1.:
       self.global_df_mod = np.clip(self.global_df_mod, 0.85, 1.2)
 
     self.min_TR = self.op_params.get('min_TR')
