@@ -12,6 +12,7 @@ import textwrap
 from typing import Dict, List
 from selfdrive.swaglog import cloudlog, add_logentries_handler
 from common.op_params import opParams
+from common.travis_checker import travis
 op_params = opParams()
 
 traffic_lights = op_params.get('traffic_lights')
@@ -85,10 +86,8 @@ import traceback
 from multiprocessing import Process
 
 # Run scons
-spinner = Spinner()
+spinner = Spinner(noop=(__name__ != "__main__" or not ANDROID))
 spinner.update("0")
-if __name__ != "__main__":
-  spinner.close()
 
 if not prebuilt:
   for retry in [True, False]:
@@ -138,6 +137,8 @@ if not prebuilt:
           shutil.rmtree("/data/scons_cache", ignore_errors=True)
         else:
           print("scons build failed after retry")
+          process = subprocess.check_output(['git', 'pull'])
+          os.system('reboot')
           sys.exit(1)
       else:
         # Build failed log errors
@@ -148,10 +149,12 @@ if not prebuilt:
         cloudlog.error("scons build failed\n" + error_s)
 
         # Show TextWindow
+        no_ui = __name__ != "__main__" or not ANDROID
         error_s = "\n \n".join(["\n".join(textwrap.wrap(e, 65)) for e in errors])
-        with TextWindow("openpilot failed to build\n \n" + error_s) as t:
+        with TextWindow("openpilot failed to build\n \n" + error_s, noop=no_ui) as t:
           t.wait_for_exit()
-
+        process = subprocess.check_output(['git', 'pull'])
+        os.system('reboot')
         exit(1)
     else:
       break
@@ -160,7 +163,8 @@ import cereal
 import cereal.messaging as messaging
 
 from common.params import Params
-import selfdrive.crash as crash
+if not travis:
+  import selfdrive.crash as crash
 from selfdrive.registration import register
 from selfdrive.version import version, dirty
 from selfdrive.loggerd.config import ROOT
@@ -356,9 +360,10 @@ def prepare_managed_process(p):
       subprocess.check_call(["make", "-j4"], cwd=os.path.join(BASEDIR, proc[0]))
     except subprocess.CalledProcessError:
       # make clean if the build failed
-      cloudlog.warning("building %s failed, make clean" % (proc, ))
-      subprocess.check_call(["make", "clean"], cwd=os.path.join(BASEDIR, proc[0]))
-      subprocess.check_call(["make", "-j4"], cwd=os.path.join(BASEDIR, proc[0]))
+      if proc[0] != 'selfdrive/mapd':
+        cloudlog.warning("building %s failed, make clean" % (proc, ))
+        subprocess.check_call(["make", "clean"], cwd=os.path.join(BASEDIR, proc[0]))
+        subprocess.check_call(["make", "-j4"], cwd=os.path.join(BASEDIR, proc[0]))
 
 
 def join_process(process, timeout):
@@ -390,8 +395,11 @@ def kill_managed_process(name):
         join_process(running[name], 15)
         if running[name].exitcode is None:
           cloudlog.critical("unkillable process %s failed to die!" % name)
-          os.system("date >> /sdcard/unkillable_reboot")
-          HARDWARE.reboot()
+          # TODO: Use method from HARDWARE
+          if ANDROID:
+            cloudlog.critical("FORCE REBOOTING PHONE!")
+            os.system("date >> /sdcard/unkillable_reboot")
+            os.system("reboot")
           raise RuntimeError
       else:
         cloudlog.info("killing %s with SIGKILL" % name)
@@ -414,10 +422,8 @@ def cleanup_all_processes(signal, frame):
 
 
 def send_managed_process_signal(name, sig):
-  if name not in running or name not in managed_processes or \
-     running[name].exitcode is not None:
+  if name not in running or name not in managed_processes:
     return
-
   cloudlog.info(f"sending signal {sig} to {name}")
   os.kill(running[name].pid, sig)
 
@@ -443,8 +449,9 @@ def manager_init(should_register=True):
     os.environ['CLEAN'] = '1'
 
   cloudlog.bind_global(dongle_id=dongle_id, version=version, dirty=dirty, is_eon=True)
-  crash.bind_user(id=dongle_id)
-  crash.bind_extra(version=version, dirty=dirty, is_eon=True)
+  if not travis:
+    crash.bind_user(id=dongle_id)
+    crash.bind_extra(version=version, dirty=dirty, is_eon=True)
 
   os.umask(0)
   try:
@@ -483,8 +490,8 @@ def manager_thread():
 
 
   # start daemon processes
-  for p in daemon_processes:
-    start_daemon_process(p)
+  #for p in daemon_processes:
+  #  start_daemon_process(p)
 
   # start persistent processes
   for p in persistent_processes:
@@ -503,7 +510,7 @@ def manager_thread():
       del managed_processes[k]
 
   started_prev = False
-  logger_dead = False
+  logger_dead = True
 
   while 1:
     msg = messaging.recv_sock(thermal_sock, wait=True)
@@ -518,7 +525,7 @@ def manager_thread():
         else:
           start_managed_process(p)
     else:
-      logger_dead = False
+      logger_dead = True # set to False for logging
       driver_view = params.get("IsDriverViewEnabled") == b"1"
 
       # TODO: refactor how manager manages processes
@@ -550,13 +557,20 @@ def manager_prepare(spinner=None):
   # build all processes
   os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-  # Spinner has to start from 70 here
-  total = 100.0 if prebuilt else 30.0
-
-  for i, p in enumerate(managed_processes):
-    if spinner is not None:
-      spinner.update("%d" % ((100.0 - total) + total * (i + 1) / len(managed_processes),))
+  process_cnt = len(managed_processes)
+  loader_proc = []
+  params = Params()
+  spinner_text = "chffrplus" if params.get("Passive")=="1" else "프로세스"
+  for n,p in enumerate(managed_processes):
+    if os.getenv("PREPAREONLY") is None:
+      loader_proc.append(subprocess.Popen(["./spinner",
+        "{0} 로딩: {1}/{2} {3}".format(spinner_text, n+1, process_cnt, p)],
+        cwd=os.path.join(BASEDIR, "selfdrive", "ui", "spinner"),
+        close_fds=True))
     prepare_managed_process(p)
+
+  # end subprocesses here to stop screen flickering
+  [loader_proc[pc].terminate() for pc in range(process_cnt) if loader_proc]
 
 def uninstall():
   cloudlog.warning("uninstalling")
@@ -573,6 +587,9 @@ def main():
     # disable bluetooth
     os.system('service call bluetooth_manager 8')
 
+  # Enable Hotspot On Boot
+  if op_params.get('hotspot_on_boot'):
+    os.system("service call wifi 37 i32 0 i32 1 &")
   params = Params()
   params.manager_start()
 
@@ -678,7 +695,8 @@ def main():
     manager_thread()
   except Exception:
     traceback.print_exc()
-    crash.capture_exception()
+    if not travis:
+      crash.capture_exception()
   finally:
     cleanup_all_processes(None, None)
 
@@ -698,6 +716,8 @@ if __name__ == "__main__":
     error = "Manager failed to start\n \n" + error
     with TextWindow(error) as t:
       t.wait_for_exit()
+    process = subprocess.check_output(['git', 'pull'])
+    os.system('reboot')
 
     raise
 
