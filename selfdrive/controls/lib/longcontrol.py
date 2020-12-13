@@ -139,6 +139,10 @@ class LongControl():
         elif vd_ratio > 1 and vd_r < 1.5:
           output_gb *= vd_ratio
           output_gb = clip(output_gb, -brake_max, gas_max)
+      elif hasLead and radarState.leadOne.status and 3 < dRel < 10 and output_gb < 0 and -2 <= (vRel*3.6) <= 0:
+        d_ratio = interp(dRel, [3,6,10], [2,1.5,1])
+        output_gb *= d_ratio
+
       elif hasLead and radarState.leadOne.status and 7 < dRel < 17 and abs(vRel*3.6) > 4 and output_gb > 0 and (CS.vEgo * CV.MS_TO_KPH) < 25:
         output_gb *= 1.3
         output_gb = clip(output_gb, -brake_max, gas_max)
