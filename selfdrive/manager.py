@@ -490,8 +490,8 @@ def manager_thread():
 
 
   # start daemon processes
-  #for p in daemon_processes:
-  #  start_daemon_process(p)
+  for p in daemon_processes:
+    start_daemon_process(p)
 
   # start persistent processes
   for p in persistent_processes:
@@ -510,7 +510,7 @@ def manager_thread():
       del managed_processes[k]
 
   started_prev = False
-  logger_dead = True
+  logger_dead = False
 
   while 1:
     msg = messaging.recv_sock(thermal_sock, wait=True)
@@ -525,7 +525,7 @@ def manager_thread():
         else:
           start_managed_process(p)
     else:
-      logger_dead = True # set to False for logging
+      logger_dead = False
       driver_view = params.get("IsDriverViewEnabled") == b"1"
 
       # TODO: refactor how manager manages processes
