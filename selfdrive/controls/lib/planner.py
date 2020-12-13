@@ -115,6 +115,7 @@ class Planner():
     self.path_x = np.arange(192)
 
     self.params = Params()
+    self.slowdown_for_curves = self.params.get("OpkrSlowOnCurve", encoding='utf8') == "1"
     self.first_loop = True
     self.offset = 0
     self.last_time = 0
