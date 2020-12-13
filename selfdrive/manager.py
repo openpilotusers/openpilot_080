@@ -665,6 +665,7 @@ def main():
     ("OpkrCruiseGapSet", "3"),
     ("OpkrLatMode", "0"),
     ("OpkrAccMode", "1"),
+    ("OpkrSlowOnCurve", "0"),
   ]
 
   # set unset params
