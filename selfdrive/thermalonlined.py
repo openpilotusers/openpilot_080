@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.7
 import psutil
 import time
-import cereal.messaging_arne as messaging
+import cereal.messaging as messaging
 from selfdrive.loggerd.config import get_available_percent
 
 def read_tz(x, clip=True):

@@ -178,6 +178,7 @@ managed_processes = {
   "thermald": "selfdrive.thermald.thermald",
   "trafficd": ("selfdrive/trafficd", ["./trafficd"]),
   "traffic_manager": "selfdrive.trafficd.traffic_manager",
+  "thermalonlined": "selfdrive.thermalonlined",
   "uploader": "selfdrive.loggerd.uploader",
   "deleter": "selfdrive.loggerd.deleter",
   "controlsd": "selfdrive.controls.controlsd",
@@ -204,6 +205,7 @@ managed_processes = {
   "dmonitoringmodeld": ("selfdrive/modeld", ["./dmonitoringmodeld"]),
   "modeld": ("selfdrive/modeld", ["./modeld"]),
   "mapd": ("selfdrive/mapd", ["./mapd.py"]),
+  "driverview": "selfdrive.controls.lib.driverview",
   "rtshield": "selfdrive.rtshield",
   "lanespeedd": "selfdrive.controls.lib.lane_speed",
 }
@@ -252,6 +254,7 @@ car_started_processes = [
   'proclogd',
   'ubloxd',
   'mapd',
+  'thermalonlined',
   'locationd',
   'clocksd',
 ]
