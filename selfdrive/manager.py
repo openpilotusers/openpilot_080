@@ -560,11 +560,11 @@ def manager_prepare(spinner=None):
   process_cnt = len(managed_processes)
   loader_proc = []
   params = Params()
-  spinner_text = "chffrplus" if params.get("Passive")=="1" else "ÇÁ·Î¼¼½º"
+  spinner_text = "chffrplus" if params.get("Passive")=="1" else "í”„ë¡œì„¸ìŠ¤"
   for n,p in enumerate(managed_processes):
     if os.getenv("PREPAREONLY") is None:
       loader_proc.append(subprocess.Popen(["./spinner",
-        "{0} ·Îµù: {1}/{2} {3}".format(spinner_text, n+1, process_cnt, p)],
+        "{0} ë¡œë”©: {1}/{2} {3}".format(spinner_text, n+1, process_cnt, p)],
         cwd=os.path.join(BASEDIR, "selfdrive", "ui", "spinner"),
         close_fds=True))
     prepare_managed_process(p)
