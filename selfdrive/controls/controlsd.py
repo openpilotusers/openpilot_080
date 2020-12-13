@@ -70,7 +70,7 @@ class Controls:
     self.sm = sm
     if self.sm is None:
       self.sm = messaging.SubMaster(['thermal', 'health', 'model', 'liveCalibration', 'frontFrame',
-                                     'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman', 'radarState', 'trafficModelEvent'])
+                                     'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman', 'radarState'])
 
     self.sm_smiskol = messaging.SubMaster(['radarState', 'dynamicFollowData', 'liveTracks', 'dynamicFollowButton',
                                            'laneSpeed', 'dynamicCameraOffset', 'modelLongButton'])
@@ -543,16 +543,16 @@ class Controls:
 
     self.last_model_long = self.sm_smiskol['modelLongButton'].enabled
 
-    if self.traffic_light_alerts:
-      traffic_status = self.sm['trafficModelEvent'].status
-      traffic_confidence = round(self.sm['trafficModelEvent'].confidence * 100, 2)
-      if traffic_confidence >= 75:
-        if traffic_status == 'SLOW':
-          self.AM.add_custom(self.sm.frame, 'trafficSlow', ET.WARNING, self.enabled, extra_text_2=' ({}%)'.format(traffic_confidence))
-        elif traffic_status == 'GREEN':
-          self.AM.add_custom(self.sm.frame, 'trafficGreen', ET.WARNING, self.enabled, extra_text_2=' ({}%)'.format(traffic_confidence))
-        elif traffic_status == 'DEAD':  # confidence will be 100
-          self.AM.add_custom(self.sm.frame, 'trafficDead', ET.WARNING, self.enabled)
+    #if self.traffic_light_alerts:
+    #  traffic_status = self.sm['trafficModelEvent'].status
+    #  traffic_confidence = round(self.sm['trafficModelEvent'].confidence * 100, 2)
+    #  if traffic_confidence >= 75:
+    #    if traffic_status == 'SLOW':
+    #      self.AM.add_custom(self.sm.frame, 'trafficSlow', ET.WARNING, self.enabled, extra_text_2=' ({}%)'.format(traffic_confidence))
+    #    elif traffic_status == 'GREEN':
+    #      self.AM.add_custom(self.sm.frame, 'trafficGreen', ET.WARNING, self.enabled, extra_text_2=' ({}%)'.format(traffic_confidence))
+    #    elif traffic_status == 'DEAD':  # confidence will be 100
+    #      self.AM.add_custom(self.sm.frame, 'trafficDead', ET.WARNING, self.enabled)
     self.AM.process_alerts(self.sm.frame, clear_event)
     CC.hudControl.visualAlert = self.AM.visual_alert
 
