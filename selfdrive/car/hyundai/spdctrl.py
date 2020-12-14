@@ -2,6 +2,7 @@ import math
 import numpy as np
 from cereal import car, log
 from common.numpy_fast import clip, interp
+from common.params import Params
 
 from selfdrive.car.hyundai.spdcontroller  import SpdController
 
@@ -22,6 +23,7 @@ class Spdctrl(SpdController):
         self.cut_in = False
 
     def update_lead(self, sm, CS, dRel, yRel, vRel):
+        osm = Params().get("LimitSetSpeed", encoding='utf8') == "1"
         plan = sm['plan']
         dRele = plan.dRel1 #EON Lead
         yRele = plan.yRel1 #EON Lead
@@ -30,6 +32,7 @@ class Spdctrl(SpdController):
         yRelef = plan.yRel2 #EON Lead
         vRelef = plan.vRel2 * 3.6 + 0.5 #EON Lead
         lead2_status = plan.status2
+        target_speed = plan.targetSpeed
         lead_set_speed = int(round(self.cruise_set_speed_kph))
         lead_wait_cmd = 300
 
@@ -78,6 +81,9 @@ class Spdctrl(SpdController):
             lead_set_speed = int(round(CS.clu_Vanz)) + 5
             self.seq_step_debug = "운전자가속"
             lead_wait_cmd = 15
+        elif (int(target_speed)+5) < int(CS.VSetDis) and osm:
+            self.seq_step_debug = "맵기반감속"
+            lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -1)
         # 거리 유지 조건
         elif d_delta < 0 or d_delta2 < 0: # 기준유지거리(현재속도*0.4)보다 가까이 있게 된 상황
             if (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and dRele - dRelef > 3 and lead2_status:
