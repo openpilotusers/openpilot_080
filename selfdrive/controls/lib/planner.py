@@ -16,7 +16,6 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
-from selfdrive.controls.lib.long_mpc_model import LongitudinalMpcModel
 from common.op_params import opParams
 op_params = opParams()
 osm = op_params.get('osm')
