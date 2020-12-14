@@ -22,6 +22,7 @@ import common.CTime1000 as tm
 
 LaneChangeState = log.PathPlan.LaneChangeState
 VisualAlert = car.CarControl.HUDControl.VisualAlert
+GearShifter = car.CarState.GearShifter
 min_set_speed = 30 * CV.KPH_TO_MS
 
 # Accel limits
@@ -531,6 +532,9 @@ class CarController():
       if self.standstill_status_timer > 200:
         self.standstill_status = 1
         self.standstill_status_timer = 0
+    elif CS.out.gearShifter != GearShifter.drive:
+      self.standstill_status = 0
+      self.standstill_status_timer = 0
     if self.standstill_status == 1 and CS.out.vEgo > 1:
       self.standstill_status = 0
 
