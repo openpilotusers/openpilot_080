@@ -2,8 +2,8 @@
 from cereal import car
 from common.params import Params
 from selfdrive.config import Conversions as CV
-from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons
-from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
+from selfdrive.car.hyundai.values import CAR, Buttons
+from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 
 EventName = car.CarEvent.EventName
@@ -50,22 +50,76 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = int(params.get('SteerLimitTimerAdj')) * 0.01
     ret.steerRatio = int(params.get('SteerRatioAdj')) * 0.1
 
-    ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
-    ret.longitudinalTuning.kpV = [0.8, 0.7, 0.6, 0.55]
-    ret.longitudinalTuning.kiBP = [0., 1., 15., 35.]
-    ret.longitudinalTuning.kiV = [0.4, 0.3, 0.2, 0.1]
-    #ret.longitudinalTuning.kfBP = [0., 5.]
-    #ret.longitudinalTuning.kfV = [1., 1.]
-    ret.longitudinalTuning.deadzoneBP = [0.0, 0.5]
-    ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
-  
-    ret.gasMaxBP = [0., 1., 1.1, 15., 40.]
-    ret.gasMaxV = [2., 2., 2., 2., 2.]
-    ret.brakeMaxBP = [0., 5.]
-    ret.brakeMaxV = [4.0, 4.0]
-
-    ret.steerMaxV = [LqrSteerMaxV]
-    ret.steerMaxBP = [0.]
+    if candidate == CAR.GENESIS:
+      ret.mass = 1900. + STD_CARGO_KG
+      ret.wheelbase = 3.01
+    elif candidate == CAR.GENESIS_G70:
+      ret.mass = 1640. + STD_CARGO_KG
+      ret.wheelbase = 2.84
+    elif candidate == CAR.GENESIS_G80:
+      ret.mass = 1855. + STD_CARGO_KG
+      ret.wheelbase = 3.01
+    elif candidate == CAR.GENESIS_G90:
+      ret.mass = 2200
+      ret.wheelbase = 3.15
+    elif candidate in [CAR.SANTA_FE]:
+      ret.mass = 1694 + STD_CARGO_KG
+      ret.wheelbase = 2.766
+    elif candidate in [CAR.SONATA, CAR.SONATA_HEV]:
+      ret.mass = 1513. + STD_CARGO_KG
+      ret.wheelbase = 2.84
+    elif candidate in [CAR.SONATA19, CAR.SONATA19_HEV]:
+      ret.mass = 4497. * CV.LB_TO_KG
+      ret.wheelbase = 2.804
+    elif candidate == CAR.PALISADE:
+      ret.mass = 1999. + STD_CARGO_KG
+      ret.wheelbase = 2.90
+    elif candidate in [CAR.ELANTRA, CAR.ELANTRA_GT_I30]:
+      ret.mass = 1275. + STD_CARGO_KG
+      ret.wheelbase = 2.7
+    elif candidate == CAR.KONA:
+      ret.mass = 1275. + STD_CARGO_KG
+      ret.wheelbase = 2.7
+    elif candidate in [CAR.KONA_HEV, CAR.KONA_EV]:
+      ret.mass = 1685. + STD_CARGO_KG
+      ret.wheelbase = 2.7
+    elif candidate in [CAR.IONIQ_HEV, CAR.IONIQ_EV]:
+      ret.mass = 1490. + STD_CARGO_KG   #weight per hyundai site https://www.hyundaiusa.com/ioniq-electric/specifications.aspx
+      ret.wheelbase = 2.7
+    elif candidate in [CAR.GRANDEUR, CAR.GRANDEUR_HEV]:
+      ret.mass = 1640. + STD_CARGO_KG
+      ret.wheelbase = 2.845
+    elif candidate == CAR.VELOSTER:
+      ret.mass = 3558. * CV.LB_TO_KG
+      ret.wheelbase = 2.80
+    elif candidate == CAR.NEXO:
+      ret.mass = 1885. + STD_CARGO_KG
+      ret.wheelbase = 2.79
+    # kia
+    elif candidate == CAR.SORENTO:
+      ret.mass = 1985. + STD_CARGO_KG
+      ret.wheelbase = 2.78
+    elif candidate in [CAR.OPTIMA, CAR.OPTIMA_HEV]:
+      ret.wheelbase = 2.80
+      ret.mass = 1595. + STD_CARGO_KG
+    elif candidate == CAR.STINGER:
+      ret.mass = 1825.0 + STD_CARGO_KG
+      ret.wheelbase = 2.906 # https://www.kia.com/us/en/stinger/specs
+    elif candidate == CAR.FORTE:
+      ret.mass = 3558. * CV.LB_TO_KG
+      ret.wheelbase = 2.80
+    elif candidate == CAR.CEED:
+      ret.mass = 1350. + STD_CARGO_KG
+      ret.wheelbase = 2.65
+    elif candidate == CAR.SPORTAGE:
+      ret.mass = 1985. + STD_CARGO_KG
+      ret.wheelbase = 2.78
+    elif candidate in [CAR.NIRO_HEV, CAR.NIRO_EV]:
+      ret.mass = 1737. + STD_CARGO_KG
+      ret.wheelbase = 2.7
+    elif candidate in [CAR.CADENZA, CAR.CADENZA_HEV]:
+      ret.mass = 1640. + STD_CARGO_KG
+      ret.wheelbase = 2.845
 
     if int(params.get('LateralControlMethod')) == 0:
       ret.lateralTuning.pid.kf = PidKf
@@ -90,75 +144,24 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.lqr.l = [0.33, 0.318]
       ret.lateralTuning.lqr.dcGain = DcGain
 
-    if candidate in [CAR.SANTA_FE, CAR.SANTA_FE_2017]:
-      ret.mass = 3982. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.wheelbase = 2.766
-    elif candidate in [CAR.SONATA, CAR.SONATA_HEV]:
-      ret.mass = 1513. + STD_CARGO_KG
-      ret.wheelbase = 2.84
-    elif candidate in [CAR.SONATA_2019, CAR.SONATA_HEV_2019]:
-      ret.mass = 4497. * CV.LB_TO_KG
-      ret.wheelbase = 2.804
-    elif candidate == CAR.PALISADE:
-      ret.mass = 1999. + STD_CARGO_KG
-      ret.wheelbase = 2.90
-    elif candidate == CAR.KIA_SORENTO:
-      ret.mass = 1985. + STD_CARGO_KG
-      ret.wheelbase = 2.78
-    elif candidate in [CAR.ELANTRA, CAR.ELANTRA_GT_I30]:
-      ret.mass = 1275. + STD_CARGO_KG
-      ret.wheelbase = 2.7
-    elif candidate == CAR.ELANTRA_2020:
-      ret.mass = 1275. + STD_CARGO_KG
-      ret.wheelbase = 2.7
-    elif candidate == CAR.HYUNDAI_GENESIS:
-      ret.mass = 2060. + STD_CARGO_KG
-      ret.wheelbase = 3.01
-    elif candidate == CAR.GENESIS_G70:
-      ret.mass = 1640.0 + STD_CARGO_KG
-      ret.wheelbase = 2.84
-    elif candidate == CAR.GENESIS_G80:
-      ret.mass = 2060. + STD_CARGO_KG
-      ret.wheelbase = 3.01
-    elif candidate == CAR.GENESIS_G90:
-      ret.mass = 2060. + STD_CARGO_KG
-      ret.wheelbase = 3.01
-    elif candidate in [CAR.KIA_OPTIMA, CAR.KIA_OPTIMA_HEV]:
-      ret.mass = 1595. + STD_CARGO_KG
-      ret.wheelbase = 2.80
-    elif candidate == CAR.KIA_STINGER:
-      ret.mass = 1825. + STD_CARGO_KG
-      ret.wheelbase = 2.78
-    elif candidate == CAR.KONA:
-      ret.mass = 1275. + STD_CARGO_KG
-      ret.wheelbase = 2.7
-    elif candidate in [CAR.KONA_HEV, CAR.KONA_EV]:
-      ret.mass = 1685. + STD_CARGO_KG
-      ret.wheelbase = 2.7
-    elif candidate in [CAR.IONIQ_HEV, CAR.IONIQ_EV_LTD]:
-      ret.mass = 1490. + STD_CARGO_KG
-      ret.wheelbase = 2.7
-    elif candidate == CAR.KIA_FORTE:
-      ret.mass = 3558. * CV.LB_TO_KG
-      ret.wheelbase = 2.80
-    elif candidate == CAR.KIA_CEED:
-      ret.mass = 1350. + STD_CARGO_KG
-      ret.wheelbase = 2.65
-    elif candidate == CAR.KIA_SPORTAGE:
-      ret.mass = 1985. + STD_CARGO_KG
-      ret.wheelbase = 2.78
-    elif candidate == CAR.VELOSTER:
-      ret.mass = 2960. * CV.LB_TO_KG
-      ret.wheelbase = 2.69
-    elif candidate in [CAR.KIA_NIRO_HEV, CAR.KIA_NIRO_EV]:
-      ret.mass = 1737. + STD_CARGO_KG
-      ret.wheelbase = 2.7
-    elif candidate in [CAR.GRANDEUR, CAR.GRANDEUR_HEV]:
-      ret.mass = 1719. + STD_CARGO_KG
-      ret.wheelbase = 2.8
-    elif candidate in [CAR.KIA_CADENZA, CAR.KIA_CADENZA_HEV]:
-      ret.mass = 1575. + STD_CARGO_KG
-      ret.wheelbase = 2.85
+
+    ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
+    ret.longitudinalTuning.kpV = [0.8, 0.7, 0.6, 0.55]
+    ret.longitudinalTuning.kiBP = [0., 1., 15., 35.]
+    ret.longitudinalTuning.kiV = [0.4, 0.3, 0.2, 0.1]
+    #ret.longitudinalTuning.kfBP = [0., 5.]
+    #ret.longitudinalTuning.kfV = [1., 1.]
+    ret.longitudinalTuning.deadzoneBP = [0.0, 0.5]
+    ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
+  
+    ret.gasMaxBP = [0., 1., 1.1, 15., 40.]
+    ret.gasMaxV = [2., 2., 2., 2., 2.]
+    ret.brakeMaxBP = [0., 5.]
+    ret.brakeMaxV = [4.0, 4.0]
+
+    ret.steerMaxV = [LqrSteerMaxV]
+    ret.steerMaxBP = [0.]
+
 
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
 
@@ -201,7 +204,7 @@ class CarInterface(CarInterfaceBase):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
-    ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera)
+    ret.enableCamera = True
 
     ret.radarDisablePossible = True
 

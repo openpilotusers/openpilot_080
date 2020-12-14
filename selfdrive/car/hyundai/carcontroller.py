@@ -57,7 +57,7 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
 
   sys_warning = (visual_alert == VisualAlert.steerRequired)
   if sys_warning:
-      sys_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 3
+      sys_warning = 1 if fingerprint in [CAR.GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 3
 
   if enabled or sys_warning:
       sys_state = 3
@@ -68,9 +68,9 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
   left_lane_warning = 0
   right_lane_warning = 0
   #if left_lane_depart:
-  #  left_lane_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
+  #  left_lane_warning = 1 if fingerprint in [CAR.GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
   #if right_lane_depart:
-  #  right_lane_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
+  #  right_lane_warning = 1 if fingerprint in [CAR.GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
 
   return sys_warning, sys_state, left_lane_warning, right_lane_warning
 
