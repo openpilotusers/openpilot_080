@@ -504,7 +504,7 @@ class CarController():
         self.cruise_gap_prev2 = CS.cruiseGapSet
       elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:
         self.cruise_gap_switch_timer2 += 1
-        if self.cruise_gap_switch_timer2 > 50:
+        if self.cruise_gap_switch_timer2 > 150:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
           self.cruise_gap_switch_timer2 = 0
       elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet == 1.0:
