@@ -219,6 +219,7 @@ class Planner():
     plan_send.plan.dRel2 = lead_2.dRel
     plan_send.plan.yRel2 = lead_2.yRel
     plan_send.plan.vRel2 = lead_2.vRel
+    plan_send.plan.status2 = lead_2.status
 
     pm.send('plan', plan_send)
 

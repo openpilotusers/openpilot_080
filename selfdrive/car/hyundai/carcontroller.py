@@ -125,6 +125,7 @@ class CarController():
     self.dRel2 = 0
     self.yRel2 = 0
     self.vRel2 = 0
+    self.lead2_status = False
     self.cut_in_detection = 0
 
     self.cruise_gap = 0.0
@@ -193,6 +194,7 @@ class CarController():
     self.dRel2 = int(plan.dRel2) #EON Lead
     self.yRel2 = int(plan.yRel2) #EON Lead
     self.vRel2 = int(plan.vRel2 * 3.6 + 0.5) #EON Lead
+    self.lead2_status = plan.status2
 
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale
@@ -499,7 +501,7 @@ class CarController():
       elif self.cruise_gap_prev == CS.cruiseGapSet:
         self.cruise_gap_set_init = 0
         self.cruise_gap_prev = 0
-      if CS.out.vEgo > 8 and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
+      if CS.out.vEgo > 8 and self.lead2_status and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
         self.cut_in_detection = 1
         self.cruise_gap_prev2 = CS.cruiseGapSet
       elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:

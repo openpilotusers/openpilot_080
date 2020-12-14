@@ -851,6 +851,7 @@ struct Plan {
   dRel2 @35 :Float32;
   yRel2 @36 :Float32;
   vRel2 @37 :Float32;
+  status2 @38 :Bool;
 
   struct GpsTrajectory {
     x @0 :List(Float32);
