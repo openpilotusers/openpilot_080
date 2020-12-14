@@ -499,7 +499,7 @@ class CarController():
       elif self.cruise_gap_prev == CS.cruiseGapSet:
         self.cruise_gap_set_init = 0
         self.cruise_gap_prev = 0
-      if CS.out.vEgo > 8 and self.dRel - self.dRel2 > 3 and self.cut_in_detection = 0 and self.cruise_gap_prev2 == 0:
+      if CS.out.vEgo > 8 and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
         self.cut_in_detection = 1
         self.cruise_gap_prev2 = CS.cruiseGapSet
       elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:
