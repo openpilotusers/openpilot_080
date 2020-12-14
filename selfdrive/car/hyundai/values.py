@@ -62,7 +62,7 @@ class Buttons:
 params = Params()
 fingerprint_issued_fix = params.get('FingerprintIssuedFix') == "1"
 
-if fingerprint_issued_fix:
+if fingerprint_issued_fix: # 핑거인식문제 혹은 다른차량과 핑거프린트 충돌이 나는경우 여기다가 핑거를 넣으시고 개발자 메뉴에서 핑거프린트 이슈차량 전용을 켜면 적용됩니다.
   FINGERPRINTS = {
     # genesis
     CAR.GENESIS: [{}],
@@ -111,7 +111,7 @@ if fingerprint_issued_fix:
     CAR.CADENZA: [{}],  
     CAR.CADENZA_HEV: [{}]
   }
-else:
+else: # 핑거 프린트 이슈 없는 차량은 이곳에 넣으세요.
   FINGERPRINTS = {
     # genesis
     CAR.GENESIS: [{
@@ -363,7 +363,7 @@ else:
 # Don't use these fingerprints for fingerprinting, they are still used for ECU detection
 IGNORED_FINGERPRINTS = [CAR.VELOSTER, CAR.GENESIS_G70, CAR.KONA]
 
-FW_VERSIONS = {
+FW_VERSIONS = {  #ECU 인식으로 차량을 활성화 할 수 있습니다. 핑거2.0 대응
   # genesis
   CAR.GENESIS_G70: {
     (Ecu.fwdRadar, 0x7d0, None): [b'\xf1\x00IK__ SCC F-CUP      1.00 1.02 96400-G9100         \xf1\xa01.02',],
@@ -561,19 +561,29 @@ CHECKSUM = {
 }
 
 FEATURES = {
-  # which message has the gear
-  "use_cluster_gears": set([CAR.ELANTRA, CAR.KONA, CAR.ELANTRA_GT_I30, CAR.CADENZA, CAR.GRANDEUR]),
-  "use_tcu_gears": set([CAR.OPTIMA, CAR.SONATA19, CAR.VELOSTER]),
-
+  # 캔오류 관련, 오류가 발생하는 경우는 본인 차종에 맞지 않는 캔신호가 들어오기때문입니다. 대부분 이곳을 수정하면 해결되나, 부득이 판다코드를 수정해야 될수도 있습니다.
+  # debug 코드가 포함되어 있으면, /data/openpilot/selfdrive/debug 안에 몇가지 툴이 들어있습니다. 실행하시면 디버그에 도움이 되실겁니다. 팟팅!!! 
+  # Use Cluster for Gear Selection, rather than Transmission
+  "use_cluster_gears": {CAR.ELANTRA, CAR.KONA, CAR.ELANTRA_GT_I30, CAR.CADENZA, CAR.GRANDEUR},
+  # Use TCU Message for Gear Selection
+  "use_tcu_gears": {CAR.OPTIMA, CAR.SONATA19, CAR.VELOSTER},
+  # Use E_GEAR Message for Gear Selection
+  "use_elect_gears": {CAR.SONATA_HEV, CAR.SONATA19_HEV, CAR.KONA_EV, CAR.KONA_HEV, CAR.IONIQ_EV, CAR.IONIQ_HEV, CAR.GRANDEUR_HEV, CAR.NEXO,
+                          CAR.OPTIMA_HEV, CAR.CADENZA_HEV, CAR.NIRO_EV}, # 전기차 or 하이브리드 기어인식 부분
+  # Use E_EMS11 Message for Gas and Brake for Hybrid/ELectric
+  "use_elect_ems": {CAR.OPTIMA_HEV, CAR.IONIQ_EV, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.SONATA_HEV, CAR.NIRO_EV, CAR.CADENZA_HEV,
+                    CAR.GRANDEUR_HEV, CAR.NEXO, CAR.NIRO_HEV}, # 전기차 or 하이브리드 차량 넣어주세요.(가속페달관련)
   # send LFA MFA message for new HKG models
-  "send_lfa_mfa": set([]),
+  "send_lfa_mfa": {}, #차량의 LFA아이콘(핸들모양 아이콘)을 켜지게 하려면 여기다가 본인 차종을 넣으세요.
+  "has_scc13": set([]),
+  "has_scc14": set([]),
+  # these cars use the FCA11 message for the AEB and FCW signals, all others use SCC12
+  "use_fca": {CAR.SONATA, CAR.ELANTRA, CAR.ELANTRA_GT_I30, CAR.STINGER, CAR.IONIQ_HEV, CAR.KONA, CAR.KONA_EV, CAR.FORTE,
+              CAR.PALISADE, CAR.GENESIS_G70}, # 전방추돌관련 계기판 오류가 발생할 경우 여기다 본인 차종을 넣어보세요.
 
-  "allow_high_steer": set([CAR.KONA, CAR.KONA_EV, CAR.KONA_HEV, CAR.NIRO_EV]),
+  "use_bsm": {CAR.SONATA, CAR.PALISADE, CAR.GENESIS, CAR.GENESIS_G70, CAR.GENESIS_G80, CAR.GENESIS_G90,
+              CAR.KONA, CAR.OPTIMA_HEV}, #후측방 감지 BSM 옵션이 있는 차량의 경우 넣어주세요.
 }
-
-ELEC_VEH = set([CAR.IONIQ_EV, CAR.KONA_EV, CAR.NIRO_EV, CAR.NEXO])
-
-HYBRID_VEH = set([CAR.OPTIMA_HEV, CAR.IONIQ_HEV, CAR.SONATA_HEV, CAR.CADENZA_HEV, CAR.GRANDEUR_HEV, CAR.NIRO_HEV, CAR.KONA_HEV])
 
 DBC = {
   # genesis
@@ -585,32 +595,32 @@ DBC = {
   CAR.ELANTRA: dbc_dict('hyundai_kia_generic', None),
   CAR.ELANTRA_GT_I30: dbc_dict('hyundai_kia_generic', None),
   CAR.SONATA: dbc_dict('hyundai_kia_generic', None),
-  CAR.SONATA_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.SONATA_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SONATA19: dbc_dict('hyundai_kia_generic', None),
-  CAR.SONATA19_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.SONATA19_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.KONA: dbc_dict('hyundai_kia_generic', None),
   CAR.KONA_EV: dbc_dict('hyundai_kia_generic', None),
-  CAR.KONA_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.KONA_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.IONIQ_EV: dbc_dict('hyundai_kia_generic', None),
-  CAR.IONIQ_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.IONIQ_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SANTA_FE: dbc_dict('hyundai_kia_generic', None),
   CAR.PALISADE: dbc_dict('hyundai_kia_generic', None),
   CAR.VELOSTER: dbc_dict('hyundai_kia_generic', None),
   CAR.GRANDEUR: dbc_dict('hyundai_kia_generic', None),
-  CAR.GRANDEUR_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.GRANDEUR_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.NEXO: dbc_dict('hyundai_kia_generic', None),
   # kia
   CAR.FORTE: dbc_dict('hyundai_kia_generic', None),
   CAR.OPTIMA: dbc_dict('hyundai_kia_generic', None),
-  CAR.OPTIMA_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.OPTIMA_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SPORTAGE: dbc_dict('hyundai_kia_generic', None),
   CAR.SORENTO: dbc_dict('hyundai_kia_generic', None),
   CAR.STINGER: dbc_dict('hyundai_kia_generic', None),
   CAR.NIRO_EV: dbc_dict('hyundai_kia_generic', None),
-  CAR.NIRO_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.NIRO_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.CEED: dbc_dict('hyundai_kia_generic', None),
   CAR.CADENZA: dbc_dict('hyundai_kia_generic', None),
-  CAR.CADENZA_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.CADENZA_HEV: dbc_dict('hyundai_kia_generic', None),
 }
 
 STEER_THRESHOLD = 150

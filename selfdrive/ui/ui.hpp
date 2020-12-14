@@ -101,8 +101,6 @@ typedef struct {
 
 typedef struct UIScene {
 
-  bool mlButtonEnabled;
-
   float mpc_x[50];
   float mpc_y[50];
 
@@ -163,7 +161,6 @@ typedef struct UIScene {
   float tpmsPressureRr;
   int lateralControlMethod;
   float radarDistance;
-  int long_plan_source;
   bool standStill;
 
   cereal::HealthData::HwType hwType;
@@ -296,8 +293,6 @@ typedef struct UIState {
   float speed_lim_off;
   int is_OpenpilotViewEnabled;
   int lateral_control;
-  int lat_mode;
-  int acc_mode;
 
   int nOpkrAutoScreenOff;
   int nOpkrUIBrightness;
@@ -320,7 +315,6 @@ typedef struct UIState {
 } UIState;
 
 void ui_init(UIState *s);
-void sa_init(UIState *s, bool full_init);
 void ui_update(UIState *s);
 
 int write_param_float(float param, const char* param_name, bool persistent_param = false);

@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 import os
-import requests
-import threading
-from selfdrive.crash import client
 from cereal import car, log
 from common.hardware import HARDWARE
 from common.numpy_fast import clip
@@ -24,8 +21,6 @@ from selfdrive.controls.lib.alertmanager import AlertManager
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.controls.lib.planner import LON_MPC_STEP
 from selfdrive.locationd.calibrationd import Calibration
-from selfdrive.controls.lib.dynamic_follow.df_manager import dfManager
-from common.op_params import opParams
 
 import common.log as trace1
 
@@ -47,19 +42,9 @@ LaneChangeDirection = log.PathPlan.LaneChangeDirection
 EventName = car.CarEvent.EventName
 
 
-def log_fingerprint(candidate, timeout=15):
-  try:
-    requests.get('https://sentry.io', timeout=timeout)
-    client.captureMessage("fingerprinted {}".format(candidate), level='info')
-    return
-  except:
-    pass
-
-
 class Controls:
   def __init__(self, sm=None, pm=None, can_sock=None):
     config_realtime_process(3, Priority.CTRL_HIGH)
-    self.op_params = opParams()
 
     # Setup sockets
     self.pm = pm
@@ -70,17 +55,7 @@ class Controls:
     self.sm = sm
     if self.sm is None:
       self.sm = messaging.SubMaster(['thermal', 'health', 'model', 'liveCalibration', 'frontFrame',
-                                     'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman', 'radarState'])
-
-    self.sm_smiskol = messaging.SubMaster(['radarState', 'dynamicFollowData', 'liveTracks', 'dynamicFollowButton',
-                                           'laneSpeed', 'dynamicCameraOffset', 'modelLongButton'])
-
-    self.op_params = opParams()
-    self.df_manager = dfManager(self.op_params)
-    self.hide_auto_df_alerts = self.op_params.get('hide_auto_df_alerts')
-    self.support_white_panda = self.op_params.get('support_white_panda')
-    self.traffic_light_alerts = self.op_params.get('traffic_light_alerts')
-    self.last_model_long = False
+                                     'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman'])
 
     self.can_sock = can_sock
     if can_sock is None:
@@ -91,8 +66,7 @@ class Controls:
     print("Waiting for CAN messages...")
     get_one_can(self.can_sock)
 
-    self.CI, self.CP, candidate = get_car(self.can_sock, self.pm.sock['sendcan'])
-    threading.Thread(target=log_fingerprint, args=[candidate]).start()
+    self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'])
 
     # read params
     params = Params()
@@ -125,7 +99,7 @@ class Controls:
     self.AM = AlertManager()
     self.events = Events()
 
-    self.LoC = LongControl(self.CP, self.CI.compute_gb, candidate)
+    self.LoC = LongControl(self.CP, self.CI.compute_gb)
     self.VM = VehicleModel(self.CP)
 
     self.lateral_control_method = 0
@@ -139,7 +113,7 @@ class Controls:
       self.LaC = LatControlLQR(self.CP)
       self.lateral_control_method = 2
 
-    self.long_plan_source = 0
+    self.controlsAllowed = False
 
     self.state = State.disabled
     self.enabled = False
@@ -177,6 +151,13 @@ class Controls:
     # controlsd is driven by can recv, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
     self.prof = Profiler(False)  # off by default
+
+    self.hyundai_lkas = self.read_only  #read_only
+
+  def auto_enable(self, CS):
+    if self.state != State.enabled and CS.vEgo >= 15 * CV.KPH_TO_MS and CS.gearShifter == 2 and self.sm['liveCalibration'].calStatus != Calibration.UNCALIBRATED:
+      if self.sm.all_alive_and_valid() and self.enabled != self.controlsAllowed:
+        self.events.add( EventName.pcmEnable )
 
   def update_events(self, CS):
     """Compute carEvents from carState"""
@@ -277,50 +258,7 @@ class Controls:
     #  and self.CP.openpilotLongitudinalControl and CS.vEgo < 0.3:
     #  self.events.add(EventName.noTarget)
 
-    self.add_stock_additions_alerts(CS)
-
-  def add_stock_additions_alerts(self, CS):
-    self.AM.SA_set_frame(self.sm.frame)
-    self.AM.SA_set_enabled(self.enabled)
-    # alert priority is defined by code location, keeping is highest, then lane speed alert, then auto-df alert
-    if self.sm_smiskol['modelLongButton'].enabled != self.last_model_long:
-      extra_text_1 = '비활성화!' if self.last_model_long else '활성화!'
-      extra_text_2 = '' if self.last_model_long else ', 모델이 예기치 않게 작동할 수 있음'
-      self.AM.SA_add('modelLongAlert', extra_text_1=extra_text_1, extra_text_2=extra_text_2)
-      return
-
-    if self.sm_smiskol['dynamicCameraOffset'].keepingLeft:
-      self.AM.SA_add('laneSpeedKeeping', extra_text_1='LEFT', extra_text_2='Oncoming traffic in right lane')
-      return
-    elif self.sm_smiskol['dynamicCameraOffset'].keepingRight:
-      self.AM.SA_add('laneSpeedKeeping', extra_text_1='RIGHT', extra_text_2='Oncoming traffic in left lane')
-      return
-
-    ls_state = self.sm_smiskol['laneSpeed'].state
-    if ls_state != '':
-      self.AM.SA_add('lsButtonAlert', extra_text_1=ls_state)
-      return
-
-    faster_lane = self.sm_smiskol['laneSpeed'].fastestLane
-    if faster_lane in ['left', 'right']:
-      ls_alert = 'laneSpeedAlert'
-      if not self.sm_smiskol['laneSpeed'].new:
-        ls_alert += 'Silent'
-      self.AM.SA_add(ls_alert, extra_text_1='{} lane faster'.format(faster_lane).upper(), extra_text_2='Change lanes to faster {} lane'.format(faster_lane))
-      return
-
-    df_out = self.df_manager.update()
-    if df_out.changed:
-      df_alert = 'dfButtonAlert'
-      if df_out.is_auto and df_out.last_is_auto:
-        # only show auto alert if engaged, not hiding auto, and time since lane speed alert not showing
-        if CS.cruiseState.enabled and not self.hide_auto_df_alerts:
-          df_alert += 'Silent'
-          self.AM.SA_add(df_alert, extra_text_1=df_out.model_profile_text + ' (auto)')
-          return
-      else:
-        self.AM.SA_add(df_alert, extra_text_1=df_out.user_profile_text, extra_text_2='동적차간거리조절: {} 프로파일 활성화됨'.format(df_out.user_profile_text))
-        return
+    self.auto_enable( CS )
 
   def data_sample(self):
     """Receive data from sockets and update carState"""
@@ -330,7 +268,6 @@ class Controls:
     CS = self.CI.update(self.CC, can_strs)
 
     self.sm.update(0)
-    self.sm_smiskol.update(0)
 
     # Check for CAN timeout
     if not can_strs:
@@ -343,10 +280,10 @@ class Controls:
     # we want to disengage openpilot. However the status from the panda goes through
     # another socket other than the CAN messages and one can arrive earlier than the other.
     # Therefore we allow a mismatch for two samples, then we trigger the disengagement.
+    self.controlsAllowed = self.sm['health'].controlsAllowed
     if not self.enabled:
       self.mismatch_counter = 0
-
-    if not self.sm['health'].controlsAllowed and self.enabled:
+    elif not self.controlsAllowed and self.enabled:
       self.mismatch_counter += 1
 
     self.distance_traveled += CS.vEgo * DT_CTRL
@@ -359,8 +296,9 @@ class Controls:
     self.v_cruise_kph_last = self.v_cruise_kph
 
     # if stock cruise is completely disabled, then we can use our own set speed logic
+    self.CP.enableCruise = self.CI.CP.enableCruise
     if not self.CP.enableCruise:
-      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.vEgo, CS.gasPressed, CS.buttonEvents, self.enabled, self.is_metric)
+      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled, self.is_metric)
     elif self.CP.enableCruise and CS.cruiseState.enabled:
       self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
 
@@ -454,11 +392,8 @@ class Controls:
     a_acc_sol = plan.aStart + (dt / LON_MPC_STEP) * (plan.aTarget - plan.aStart)
     v_acc_sol = plan.vStart + dt * (a_acc_sol + plan.aStart) / 2.0
 
-    extras_loc = {'lead_one': self.sm_smiskol['radarState'].leadOne, 'mpc_TR': self.sm_smiskol['dynamicFollowData'].mpcTR,
-                  'live_tracks': self.sm_smiskol['liveTracks'], 'has_lead': plan.hasLead}
-
     # Gas/Brake PID loop
-    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, plan.vTargetFuture, a_acc_sol, self.CP, plan.hasLead, self.sm['radarState'], plan.decelForTurn, plan.longitudinalPlanSource, extras_loc)
+    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, plan.vTargetFuture, a_acc_sol, self.CP)
     # Steering PID loop and lateral MPC
     actuators.steer, actuators.steerAngle, lac_log = self.LaC.update(self.active, CS, self.CP, path_plan)
 
@@ -494,7 +429,7 @@ class Controls:
     CC.actuators = actuators
 
     CC.cruiseControl.override = True
-    CC.cruiseControl.cancel = not self.CP.enableCruise or (not self.enabled and CS.cruiseState.enabled)
+    CC.cruiseControl.cancel = self.CP.enableCruise and not self.enabled and CS.cruiseState.enabled
 
     # Some override values for Honda
     # brake discount removes a sharp nonlinearity
@@ -507,9 +442,6 @@ class Controls:
     CC.hudControl.speedVisible = self.enabled
     CC.hudControl.lanesVisible = self.enabled
     CC.hudControl.leadVisible = self.sm['plan'].hasLead
-    CC.hudControl.leadDistance = 0 #self.sm['radarState'].leadOne.dRel
-    CC.hudControl.leadvRel = 0 #self.sm['radarState'].leadOne.vRel
-    CC.hudControl.leadyRel = 0 #self.sm['radarState'].leadOne.yRel
 
     right_lane_visible = self.sm['pathPlan'].rProb > 0.5
     left_lane_visible = self.sm['pathPlan'].lProb > 0.5
@@ -524,7 +456,7 @@ class Controls:
     if len(meta.desirePrediction) and ldw_allowed:
       l_lane_change_prob = meta.desirePrediction[Desire.laneChangeLeft - 1]
       r_lane_change_prob = meta.desirePrediction[Desire.laneChangeRight - 1]
-      if int(Params().get('OpkrLatMode')) == 3:
+      if CS.cruiseState.modeSel == 3:
         l_lane_close = left_lane_visible and (self.sm['pathPlan'].lPoly[3] < (1.08 - CAMERA_OFFSET_A))
         r_lane_close = right_lane_visible and (self.sm['pathPlan'].rPoly[3] > -(1.08 + CAMERA_OFFSET_A))
       else:
@@ -540,23 +472,10 @@ class Controls:
     clear_event = ET.WARNING if ET.WARNING not in self.current_alert_types else None
     alerts = self.events.create_alerts(self.current_alert_types, [self.CP, self.sm, self.is_metric])
     self.AM.add_many(self.sm.frame, alerts, self.enabled)
-
-    self.last_model_long = self.sm_smiskol['modelLongButton'].enabled
-
-    #if self.traffic_light_alerts:
-    #  traffic_status = self.sm['trafficModelEvent'].status
-    #  traffic_confidence = round(self.sm['trafficModelEvent'].confidence * 100, 2)
-    #  if traffic_confidence >= 75:
-    #    if traffic_status == 'SLOW':
-    #      self.AM.add_custom(self.sm.frame, 'trafficSlow', ET.WARNING, self.enabled, extra_text_2=' ({}%)'.format(traffic_confidence))
-    #    elif traffic_status == 'GREEN':
-    #      self.AM.add_custom(self.sm.frame, 'trafficGreen', ET.WARNING, self.enabled, extra_text_2=' ({}%)'.format(traffic_confidence))
-    #    elif traffic_status == 'DEAD':  # confidence will be 100
-    #      self.AM.add_custom(self.sm.frame, 'trafficDead', ET.WARNING, self.enabled)
     self.AM.process_alerts(self.sm.frame, clear_event)
     CC.hudControl.visualAlert = self.AM.visual_alert
 
-    if not self.read_only:
+    if not self.hyundai_lkas and self.enabled:
       # send car controls over can
       can_sends = self.CI.apply(CC, self.sm)
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
@@ -587,7 +506,6 @@ class Controls:
     controlsState.vEgoRaw = CS.vEgoRaw
     controlsState.angleSteers = CS.steeringAngle
     controlsState.curvature = self.VM.calc_curvature(steer_angle_rad, CS.vEgo)
-    controlsState.decelForTurn = self.sm['plan'].decelForTurn
     controlsState.steerOverride = CS.steeringPressed
     controlsState.state = self.state
     controlsState.engageable = not self.events.any(ET.NO_ENTRY)
@@ -595,7 +513,7 @@ class Controls:
     controlsState.vPid = float(self.LoC.v_pid)
     controlsState.vCruise = float(self.v_cruise_kph)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
-    controlsState.uiAccelCmd = float(self.LoC.pid.id)
+    controlsState.uiAccelCmd = float(self.LoC.pid.i)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
     controlsState.angleSteersDes = float(self.LaC.angle_steers_des)
     controlsState.vTargetLead = float(v_acc)
@@ -609,23 +527,11 @@ class Controls:
     controlsState.mapValid = self.sm['plan'].mapValid
     controlsState.forceDecel = bool(force_decel)
     controlsState.canErrorCounter = self.can_error_counter
+    controlsState.applySteer = CC.applySteer
+    controlsState.applyAccel = CC.applyAccel
     controlsState.alertTextMsg1 = self.log_alertTextMsg1
     controlsState.alertTextMsg2 = self.log_alertTextMsg2
     controlsState.lateralControlMethod = self.lateral_control_method
-
-    if self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.cruise:
-      self.long_plan_source = 1
-    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.mpc1:
-      self.long_plan_source = 2
-    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.mpc2:
-      self.long_plan_source = 3
-    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.mpc3:
-      self.long_plan_source = 4
-    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.model:
-      self.long_plan_source = 5
-    else:
-      self.long_plan_source = 0
-    controlsState.longPlanSource = self.long_plan_source
 
     if self.CP.lateralTuning.which() == 'pid':
       controlsState.lateralControlState.pidState = lac_log
@@ -673,9 +579,14 @@ class Controls:
     CS = self.data_sample()
     self.prof.checkpoint("Sample")
 
+    if self.read_only:
+      self.hyundai_lkas = self.read_only
+    elif CS.cruiseState.enabled and self.hyundai_lkas:
+      self.hyundai_lkas = False
+
     self.update_events(CS)
 
-    if not self.read_only:
+    if not self.hyundai_lkas:
       # Update control state
       self.state_transition(CS)
       self.prof.checkpoint("State transition")
@@ -688,6 +599,9 @@ class Controls:
     # Publish data
     self.publish_logs(CS, start_time, actuators, v_acc, a_acc, lac_log)
     self.prof.checkpoint("Sent")
+
+    if not CS.cruiseState.enabled and not self.hyundai_lkas:
+      self.hyundai_lkas = True
 
   def controlsd_thread(self):
     while True:

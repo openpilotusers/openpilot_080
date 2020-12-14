@@ -30,9 +30,9 @@ class LanePlanner:
     self.p_poly = [0., 0., 0., 0.]
     self.d_poly = [0., 0., 0., 0.]
 
-    self.lane_width_estimate = 3.5
+    self.lane_width_estimate = 3.7
     self.lane_width_certainty = 1.0
-    self.lane_width = 3.5
+    self.lane_width = 3.7
 
     self.l_prob = 0.
     self.r_prob = 0.
@@ -66,10 +66,11 @@ class LanePlanner:
 
   def update_d_poly(self, v_ego, sm):
     curvature = sm['controlsState'].curvature
+    mode_select = sm['carState'].cruiseState.modeSel
     Curv = round(curvature, 4)
     Poly_differ = round(abs(self.l_poly[3] + self.r_poly[3]), 2)
 
-    if int(Params().get('OpkrLatMode')) == 3 and v_ego > 8:
+    if mode_select == 3 and v_ego > 8:
       lean_offset = -0.03
       if curvature > 0.0008 and (self.l_poly[3] + self.r_poly[3]) <= 0.2: # left curve
         if Poly_differ > 0.6:
@@ -139,7 +140,7 @@ class LanePlanner:
     self.lane_width_certainty += 0.05 * (l_prob * r_prob - self.lane_width_certainty)
     current_lane_width = abs(self.l_poly[3] - self.r_poly[3])
     self.lane_width_estimate += 0.005 * (current_lane_width - self.lane_width_estimate)
-    speed_lane_width = interp(v_ego, [0., 31.], [2.75, 3.6])
+    speed_lane_width = interp(v_ego, [0., 31.], [2.8, 3.5])
     self.lane_width = self.lane_width_certainty * self.lane_width_estimate + \
                       (1 - self.lane_width_certainty) * speed_lane_width
 

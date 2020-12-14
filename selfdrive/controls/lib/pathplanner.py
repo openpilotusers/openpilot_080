@@ -126,6 +126,7 @@ class PathPlanner():
     anglesteer_desire = sm['controlsState'].angleSteersDes
 
     #live_steerratio = sm['liveParameters'].steerRatio
+    mode_select = sm['carState'].cruiseState.modeSel
     lateral_control_method = sm['controlsState'].lateralControlMethod
     if lateral_control_method == 0:
       output_scale = sm['controlsState'].lateralControlState.pidState.output
@@ -147,15 +148,31 @@ class PathPlanner():
       self.new_steerRatio_prev = interp(self.angle_diff, self.angle_differ_range, self.steerRatio_range)
       if self.new_steerRatio_prev > self.new_steerRatio:
         self.new_steerRatio = self.new_steerRatio_prev
+      #self.new_steer_rate_cost = interp(self.angle_diff, self.angle_differ_range, self.steer_rate_cost_range)
+    #if abs(output_scale) >= 1 and v_ego > 8 and ((abs(anglesteer_desire) - abs(anglesteer_current)) > 20):
+    #  self.mpc_frame += 1
+    #  if self.mpc_frame % 10 == 0:
+    #    self.new_steerRatio += (round(v_ego, 1) * 0.025)
+    #    if live_steer_ratio != CP.steerRatio:        
+    #      if self.new_steerRatio >= live_steer_ratio:
+    #        self.new_steerRatio = live_steer_ratio
+    #    else:
+    #      if self.new_steerRatio >= 17.5:
+    #        self.new_steerRatio = 17.5
+    #    self.mpc_frame = 0
     else:
       self.mpc_frame += 1
       if self.mpc_frame % 10 == 0:
         self.new_steerRatio -= 0.1
         if self.new_steerRatio <= CP.steerRatio:
           self.new_steerRatio = CP.steerRatio
+        #self.new_steer_rate_cost += 0.02
+        #if self.new_steer_rate_cost >= CP.steerRateCost:
+        #  self.new_steer_rate_cost = CP.steerRateCost
         self.mpc_frame = 0
 
     self.new_steer_actuator_delay = interp(v_ego, self.steer_actuator_delay_vel, self.steer_actuator_delay_range)
+
     # Update vehicle model
     x = max(sm['liveParameters'].stiffnessFactor, 0.1)
     #sr = max(sm['liveParameters'].steerRatio, 0.1)
@@ -235,7 +252,6 @@ class PathPlanner():
     if desire == log.PathPlan.Desire.laneChangeRight or desire == log.PathPlan.Desire.laneChangeLeft:
       self.LP.l_prob *= self.lane_change_ll_prob
       self.LP.r_prob *= self.lane_change_ll_prob
-
     self.LP.update_d_poly(v_ego, sm)
 
     # account for actuation delay
@@ -304,7 +320,7 @@ class PathPlanner():
     if stand_still:
       self.standstill_elapsed_time += DT_MDL
     else:
-      self.standstill_elapsed_time = 0
+      self.standstill_elapsed_time = 0.0
     plan_send.pathPlan.standstillElapsedTime = int(self.standstill_elapsed_time)
 
     pm.send('pathPlan', plan_send)

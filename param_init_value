@@ -5,6 +5,7 @@ OpkrEnableDriverMonitoring:1
 OpkrEnableLogger:0
 OpkrEnableGetoffAlert:1
 OpkrAutoResume:1
+OpkrVariableCruise:0
 OpkrLaneChangeSpeed:60
 OpkrAutoLaneChangeDelay:0
 OpkrSteerAngleCorrection:0
@@ -12,6 +13,7 @@ PutPrebuiltOn:0
 FingerprintIssuedFix:0
 LdwsCarFix:0
 LateralControlMethod:0
+CruiseStatemodeSelInit:1
 InnerLoopGain:30
 OuterLoopGain:20
 TimeConstant:10
@@ -47,6 +49,5 @@ DebugUi1:0
 DebugUi2:0
 OpkrBlindSpotDetect:0
 OpkrMaxAngleLimit:90
+OpkrAutoResumeOption:0
 OpkrAngleOffsetSelect:0
-OpkrCruiseGapSet:3
-OpkrAccMode:1

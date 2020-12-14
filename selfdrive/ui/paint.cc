@@ -320,7 +320,8 @@ static void ui_draw_world(UIState *s) {
   ui_draw_vision_lane_lines(s);
 
   // Draw lead indicators if openpilot is handling longitudinal
-  if (s->longitudinal_control) {
+  //if (s->longitudinal_control) {
+  if (true) {
     if (scene->lead_data[0].getStatus()) {
       draw_lead(s, scene->lead_data[0]);
     }
@@ -438,11 +439,12 @@ static void ui_draw_standstill(UIState *s) {
     ui_print(s, viz_standstill_x, viz_standstill_y+150, "%01d:%02d", minute, second);
   }
 }
+
 static void ui_draw_debug(UIState *s) 
 {
   UIScene &scene = s->scene;
 
-  int ui_viz_rx = scene.viz_rect.x + 275;
+  int ui_viz_rx = scene.viz_rect.x + 300;
   int ui_viz_ry = 108;
   int ui_viz_rx_center = scene.viz_rect.centerX();
   
@@ -453,52 +455,39 @@ static void ui_draw_debug(UIState *s)
     ui_draw_text(s->vg, 0, 1078, scene.alertTextMsg2.c_str(), 50, COLOR_WHITE_ALPHA(150), s->font_sans_semibold);
   }
 
-  nvgFontSize(s->vg, 42);
+  nvgFontSize(s->vg, 43);
   nvgFillColor(s->vg, COLOR_WHITE_ALPHA(150));
   if (s->nDebugUi2 == 1) {
-    //ui_print(s, ui_viz_rx, ui_viz_ry, "Live Parameters");
-    ui_print(s, ui_viz_rx, ui_viz_ry+300, "SR:%.2f", scene.liveParams.steerRatio);
-    //ui_print(s, ui_viz_rx, ui_viz_ry+100, "AOfs:%.2f", scene.liveParams.angleOffset);
-    ui_print(s, ui_viz_rx, ui_viz_ry+350, "AA:%.2f", scene.liveParams.angleOffsetAverage);
-    ui_print(s, ui_viz_rx, ui_viz_ry+400, "SF:%.2f", scene.liveParams.stiffnessFactor);
+    ui_print(s, ui_viz_rx, ui_viz_ry, "Live Parameters");
+    ui_print(s, ui_viz_rx, ui_viz_ry+50, "·SR:%.2f", scene.liveParams.steerRatio);
+    ui_print(s, ui_viz_rx, ui_viz_ry+100, "·AOfs:%.2f", scene.liveParams.angleOffset);
+    ui_print(s, ui_viz_rx, ui_viz_ry+150, "·AOAVG:%.2f", scene.liveParams.angleOffsetAverage);
+    ui_print(s, ui_viz_rx, ui_viz_ry+200, "·SFact:%.2f", scene.liveParams.stiffnessFactor);
 
-    ui_print(s, ui_viz_rx, ui_viz_ry+450, "AD:%.2f", scene.pathPlan.steerActuatorDelay);
-    ui_print(s, ui_viz_rx, ui_viz_ry+500, "SC:%.2f", scene.pathPlan.steerRateCost);
-    ui_print(s, ui_viz_rx, ui_viz_ry+550, "OS:%.3f", scene.output_scale);
-    //ui_print(s, ui_viz_rx, ui_viz_ry+400, "Awareness:%.2f", scene.awareness_status);
+    ui_print(s, ui_viz_rx, ui_viz_ry+270, "ADelay:%.2f", scene.pathPlan.steerActuatorDelay);
+    ui_print(s, ui_viz_rx, ui_viz_ry+320, "SRCost:%.2f", scene.pathPlan.steerRateCost);
+    ui_print(s, ui_viz_rx, ui_viz_ry+370, "OutScale:%.3f", scene.output_scale);
+    ui_print(s, ui_viz_rx, ui_viz_ry+420, "Awareness:%.2f", scene.awareness_status);
+    ui_print(s, ui_viz_rx, ui_viz_ry+470, "FaceProb:%.2f", scene.face_prob);
     if (s->lateral_control == 0) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+250, "LC:PID");
+      ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:PID");
     } else if (s->lateral_control == 1) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+250, "LC:INDI");
+      ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:INDI");
     } else if (s->lateral_control == 2) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+250, "LC:LQR");
+      ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:LQR");
     }
-    if (scene.long_plan_source == 0) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+600, "LP:none");
-    } else if (scene.long_plan_source == 1) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+600, "LP:cruise");
-    } else if (scene.long_plan_source == 2) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+600, "LP:mpc1");
-    } else if (scene.long_plan_source == 3) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+600, "LP:mpc2");
-    } else if (scene.long_plan_source == 4) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+600, "LP:mpc3");
-    } else if (scene.long_plan_source == 5) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+600, "LP:model");
-    }
-
     nvgFontSize(s->vg, 45);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-    //ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
+    ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
     if (scene.curvature >= 0.001) {
-      ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "↖%.4f　", abs(scene.curvature));
+      ui_print(s, ui_viz_rx_center, ui_viz_ry+700, "↖%.4f　", abs(scene.curvature));
     } else if (scene.curvature <= -0.001) {
-      ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "　%.4f↗", abs(scene.curvature));
+      ui_print(s, ui_viz_rx_center, ui_viz_ry+700, "　%.4f↗", abs(scene.curvature));
     } else {
-      ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "　%.4f　", abs(scene.curvature));
+      ui_print(s, ui_viz_rx_center, ui_viz_ry+700, "　%.4f　", abs(scene.curvature));
     }
-    ui_print(s, ui_viz_rx_center, ui_viz_ry+700, " 좌측간격(m)    차선폭(m)    우측간격(m)");
-    ui_print(s, ui_viz_rx_center, ui_viz_ry+750, "%.2f                    %.2f                    %.2f", scene.pathPlan.lPoly, scene.pathPlan.laneWidth, abs(scene.pathPlan.rPoly));
+    ui_print(s, ui_viz_rx_center, ui_viz_ry+750, " 좌측간격(m)    차선폭(m)    우측간격(m)");
+    ui_print(s, ui_viz_rx_center, ui_viz_ry+800, "%.2f                    %.2f                    %.2f", scene.pathPlan.lPoly, scene.pathPlan.laneWidth, abs(scene.pathPlan.rPoly));
   }
 }
 
@@ -802,34 +791,6 @@ static void ui_draw_driver_view(UIState *s) {
   const int x = (valid_frame_x + face_size + (bdr_s * 2)) + (scene->is_rhd ? valid_frame_w - box_h / 2:0);
   const int y = (box_y + box_h - face_size - bdr_s - (bdr_s * 1.5));
   ui_draw_circle_image(s->vg, x, y, face_size-5, s->img_face, scene->dmonitoring_state.getFaceDetected());
-}
-
-static void ui_draw_ml_button(UIState *s) {
-  int btn_w = 380;
-  int btn_h = 95;
-  int x = 1920 - (btn_w/2) - 35;
-  int y = 1080 - (btn_h/2) - 35 - 162;
-  int btn_x = x - btn_w / 2; // 1505
-  int btn_y = y - btn_h / 2; // 788
-
-  nvgBeginPath(s->vg);
-  nvgRoundedRect(s->vg, btn_x, btn_y, btn_w, btn_h, 15);
-  if (s->scene.mlButtonEnabled) {  // change outline color based on status of button
-    nvgStrokeColor(s->vg, nvgRGBA(55, 184, 104, 255));
-  } else {
-    nvgStrokeColor(s->vg, nvgRGBA(184, 55, 55, 255));
-  }
-  nvgStrokeWidth(s->vg, 12);
-  nvgStroke(s->vg);
-
-  nvgBeginPath(s->vg);  // dark background for readability
-  nvgRoundedRect(s->vg, btn_x, btn_y, btn_w, btn_h, 15);
-  nvgFillColor(s->vg, nvgRGBA(75, 75, 75, 75));
-  nvgFill(s->vg);
-
-  nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 255));
-  nvgFontSize(s->vg, 60*0.8);
-  nvgText(s->vg, x, (y + btn_h / 8)+7, "MODEL LONG", NULL);
 }
 
 //BB START: functions added for the display of various items
@@ -1241,7 +1202,6 @@ static void ui_draw_vision_footer(UIState *s) {
   nvgRect(s->vg, scene->viz_rect.x, s->scene.viz_rect.bottom(), scene->viz_rect.w, footer_h);
   ui_draw_vision_face(s);
   ui_draw_vision_map(s);
-  ui_draw_ml_button(s);
   ui_draw_vision_car(s);
 }
 

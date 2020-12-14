@@ -552,10 +552,12 @@ struct ControlsState @0x97ff69c53601abf1 {
   decelForModel @54 :Bool;
   canErrorCounter @57 :UInt32;
 
-  alertTextMsg1  @58 :Text;
-  alertTextMsg2  @59 :Text;
-  lateralControlMethod  @60 :UInt8;
-  longPlanSource  @61 :UInt8;
+  applySteer @58 :Float32;
+  applyAccel @59 :Float32;
+
+  alertTextMsg1  @60 :Text;
+  alertTextMsg2  @61 :Text;
+  lateralControlMethod  @62 :UInt8;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -849,6 +851,7 @@ struct Plan {
   dRel2 @35 :Float32;
   yRel2 @36 :Float32;
   vRel2 @37 :Float32;
+  status2 @38 :Bool;
 
   struct GpsTrajectory {
     x @0 :List(Float32);
@@ -861,8 +864,6 @@ struct Plan {
     mpc2 @2;
     mpc3 @3;
     model @4;
-    dynamicSpeed @5;
-    curveSlowdown @6;
   }
 }
 
@@ -2077,15 +2078,6 @@ struct Sentinel {
   type @0 :SentinelType;
 }
 
-struct DynamicFollowData {
-  mpcTR @0 :Float32;
-  profilePred @1 :UInt16;
-}
-
-struct DynamicFollowButton {
-  status @0 :UInt16;
-}
-
 struct LiveTrafficData {
   speedLimitValid @0 :Bool;
   speedLimit @1 :Float32;
@@ -2100,73 +2092,6 @@ struct TrafficModelRaw {
 struct TrafficModelEvent {
   status @0 :Text;
   confidence @1 :Float32;
-}
-
-struct LaneSpeed {
-  fastestLane @0 :Text;
-  state @1 :Text;
-  new @2 :Bool;
-
-  leftLaneSpeeds @3 :List(Float32);
-  middleLaneSpeeds @4 :List(Float32);
-  rightLaneSpeeds @5 :List(Float32);
-
-  leftLaneDistances @6 :List(Float32);
-  middleLaneDistances @7 :List(Float32);
-  rightLaneDistances @8 :List(Float32);
-
-  leftLaneOncoming @9 :Bool;
-  rightLaneOncoming @10 :Bool;
-}
-
-struct LaneSpeedButton {
-  status @0 :UInt16;
-}
-
-struct DynamicCameraOffset {
-  keepingLeft @0 :Bool;
-  keepingRight @1 :Bool;
-}
-
-struct ThermalOnlineData {
-  cpu0 @0 :UInt16;
-  cpu1 @1 :UInt16;
-  cpu2 @2 :UInt16;
-  cpu3 @3 :UInt16;
-  mem @4 :UInt16;
-  gpu @5 :UInt16;
-  bat @6 :UInt32;
-  pa0 @21 :UInt16;
-
-  # not thermal
-  freeSpace @7 :Float32;
-  batteryPercent @8 :Int16;
-  batteryStatus @9 :Text;
-  batteryCurrent @15 :Int32;
-  batteryVoltage @16 :Int32;
-  usbOnline @12 :Bool;
-
-  fanSpeed @10 :UInt16;
-  started @11 :Bool;
-  startedTs @13 :UInt64;
-
-  thermalStatus @14 :ThermalStatus;
-  chargingError @17 :Bool;
-  chargingDisabled @18 :Bool;
-
-  memUsedPercent @19 :Int8;
-  cpuPerc @20 :Int8;
-
-  enum ThermalStatus {
-    green @0;   # all processes run
-    yellow @1;  # critical processes run (kill uploader), engage still allowed
-    red @2;     # no engage, will disengage
-    danger @3;  # immediate process shutdown
-  }
-}
-
-struct ModelLongButton {
-  enabled @0 :Bool;
 }
 
 struct Event {
@@ -2251,17 +2176,8 @@ struct Event {
     modelV2 @75 :ModelDataV2;
     frontEncodeIdx @76 :EncodeIndex; # driver facing camera
     wideEncodeIdx @77 :EncodeIndex;
-
-
-    dynamicFollowData @78 :DynamicFollowData;
-    dynamicFollowButton @79 :DynamicFollowButton;
-    laneSpeed @80 :LaneSpeed;
-    laneSpeedButton @81 :LaneSpeedButton;
-    dynamicCameraOffset @82 :DynamicCameraOffset;
-    modelLongButton @83 :ModelLongButton;
-    liveTrafficData @84:LiveTrafficData;
-    trafficModelRaw @85: TrafficModelRaw;
-    trafficModelEvent @86: TrafficModelEvent;
-    thermalonline @87:ThermalOnlineData;
+    liveTrafficData @78:LiveTrafficData;
+    trafficModelRaw @79: TrafficModelRaw;
+    trafficModelEvent @80: TrafficModelEvent;
   }
 }

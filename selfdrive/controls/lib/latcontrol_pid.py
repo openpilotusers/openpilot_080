@@ -1,17 +1,16 @@
-from selfdrive.controls.lib.pid import LatPIDController
+from selfdrive.controls.lib.pid import PIController
 from selfdrive.controls.lib.drive_helpers import get_steer_max
 from cereal import car
 from cereal import log
-from cereal import log
 from common.params import Params
+
 
 class LatControlPID():
   def __init__(self, CP):
-    self.pid = LatPIDController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
-                                (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
-                                (CP.lateralTuning.pid.kdBP, CP.lateralTuning.pid.kdV),
-                                k_f=CP.lateralTuning.pid.kf, pos_limit=1.0, sat_limit=CP.steerLimitTimer)
-    self.new_kf_tuned = CP.lateralTuning.pid.newKfTuned
+    self.pid = PIController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
+                            (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
+                            k_f=CP.lateralTuning.pid.kf, pos_limit=1.0, neg_limit=-1.0,
+                            sat_limit=CP.steerLimitTimer)
     self.angle_steers_des = 0.
 
   def reset(self):
@@ -36,11 +35,7 @@ class LatControlPID():
       if CP.steerControlType == car.CarParams.SteerControlType.torque:
         # TODO: feedforward something based on path_plan.rateSteers
         steer_feedforward -= path_plan.angleOffset   # subtract the offset, since it does not contribute to resistive torque
-        if self.new_kf_tuned:
-          _c1, _c2, _c3 = 0.35189607550172824, 7.506201251644202, 69.226826411091
-          steer_feedforward *= _c1 * CS.vEgo ** 2 + _c2 * CS.vEgo + _c3
-        else:
-          steer_feedforward *= CS.vEgo ** 2  # proportional to realigning tire momentum (~ lateral accel)
+        steer_feedforward *= CS.vEgo**2  # proportional to realigning tire momentum (~ lateral accel)
       deadzone = int(Params().get('IgnoreZone')) * 0.1
 
       check_saturation = (CS.vEgo > 10) and not CS.steeringRateLimited and not CS.steeringPressed

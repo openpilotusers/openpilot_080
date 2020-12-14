@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/resource.h>
-#include <iostream>
 
 #include <algorithm>
 
@@ -41,38 +40,6 @@ static void enable_event_processing(bool yes) {
     system("service call window 18 i32 0");  // disable event processing
     event_processing_enabled = 0;
   }
-}
-
-static void send_ml(UIState *s, bool enabled) {
-  MessageBuilder msg;
-  auto mlStatus = msg.initEvent().initModelLongButton();
-  mlStatus.setEnabled(enabled);
-  s->pm->send("modelLongButton", msg);
-}
-
-static bool handle_ml_touch(UIState *s, int touch_x, int touch_y) {
-  //mlButton manager
-  int xs[2] = {1505, 1920};
-  int ys[2] = {738, 883}; //788
-  if ((xs[0] <= touch_x && touch_x <= xs[1]) && (ys[0] <= touch_y && touch_y <= ys[1])) {
-    s->scene.mlButtonEnabled = !s->scene.mlButtonEnabled;
-    send_ml(s, s->scene.mlButtonEnabled);
-    printf("ml button: %d\n", s->scene.mlButtonEnabled);
-    return true;
-  }
-  return false;
-}
-
-static bool handle_SA_touched(UIState *s, int touch_x, int touch_y) {
-  if (s->active_app == cereal::UiLayoutState::App::NONE) {  // if onroad (not settings or home)
-    if (s->awake && s->vision_connected && s->status != STATUS_OFFROAD) {  // if car started or debug mode
-      if (handle_ml_touch(s, touch_x, touch_y)) {
-        s->scene.uilayout_sidebarcollapsed = true;  // collapse sidebar when tapping any SA button
-        return true;  // only allow one button to be pressed at a time
-      }
-    }
-  }
-  return false;
 }
 
 static void set_awake(UIState *s, bool awake) {
@@ -151,7 +118,6 @@ int main(int argc, char* argv[]) {
   UIState uistate = {};
   UIState *s = &uistate;
   ui_init(s);
-  sa_init(s, true);
   s->sound = &sound;
 
   set_awake(s, true);
@@ -184,16 +150,11 @@ int main(int argc, char* argv[]) {
     set_awake(s, true);
   }
 
-  bool last_started = s->started;
   while (!do_exit) {
     if (!s->started || !s->vision_connected) {
       // Delay a while to avoid 9% cpu usage while car is not started and user is keeping touching on the screen.
       usleep(30 * 1000);
     }
-    if (s->started && !last_started) {
-      sa_init(s, false);  // reset ml button and regrab params
-    }
-    last_started = s->started;
     double u1 = millis_since_boot();
 
     ui_update(s);
@@ -234,9 +195,7 @@ int main(int argc, char* argv[]) {
       } else {
         set_awake(s, true);
         handle_sidebar_touch(s, touch_x, touch_y);
-        if (!handle_SA_touched(s, touch_x, touch_y)) {  // if SA button not touched
-          handle_vision_touch(s, touch_x, touch_y);
-        }
+        handle_vision_touch(s, touch_x, touch_y);
       }
     }
 

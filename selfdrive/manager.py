@@ -178,7 +178,6 @@ managed_processes = {
   "thermald": "selfdrive.thermald.thermald",
   "trafficd": ("selfdrive/trafficd", ["./trafficd"]),
   "traffic_manager": "selfdrive.trafficd.traffic_manager",
-  "thermalonlined": "selfdrive.thermalonlined",
   "uploader": "selfdrive.loggerd.uploader",
   "deleter": "selfdrive.loggerd.deleter",
   "controlsd": "selfdrive.controls.controlsd",
@@ -205,9 +204,7 @@ managed_processes = {
   "dmonitoringmodeld": ("selfdrive/modeld", ["./dmonitoringmodeld"]),
   "modeld": ("selfdrive/modeld", ["./modeld"]),
   "mapd": ("selfdrive/mapd", ["./mapd.py"]),
-  "driverview": "selfdrive.controls.lib.driverview",
   "rtshield": "selfdrive.rtshield",
-  "lanespeedd": "selfdrive.controls.lib.lane_speed",
 }
 
 daemon_processes = {
@@ -254,7 +251,6 @@ car_started_processes = [
   'proclogd',
   'ubloxd',
   'mapd',
-  'thermalonlined',
   'locationd',
   'clocksd',
 ]
@@ -619,6 +615,7 @@ def main():
     ("OpkrEnableLogger", "0"),
     ("OpkrEnableGetoffAlert", "1"),
     ("OpkrAutoResume", "1"),
+    ("OpkrVariableCruise", "0"),
     ("OpkrLaneChangeSpeed", "60"),
     ("OpkrAutoLaneChangeDelay", "0"),
     ("OpkrSteerAngleCorrection", "0"),
@@ -626,6 +623,7 @@ def main():
     ("FingerprintIssuedFix", "0"),
     ("LdwsCarFix", "0"),
     ("LateralControlMethod", "0"),
+    ("CruiseStatemodeSelInit", "1"),
     ("InnerLoopGain", "30"),
     ("OuterLoopGain", "20"),
     ("TimeConstant", "10"),
@@ -661,11 +659,8 @@ def main():
     ("DebugUi2", "0"),
     ("OpkrBlindSpotDetect", "0"),
     ("OpkrMaxAngleLimit", "90"),
+    ("OpkrAutoResumeOption", "0"),
     ("OpkrAngleOffsetSelect", "0"),
-    ("OpkrCruiseGapSet", "3"),
-    ("OpkrLatMode", "0"),
-    ("OpkrAccMode", "1"),
-    ("OpkrSlowOnCurve", "0"),
   ]
 
   # set unset params

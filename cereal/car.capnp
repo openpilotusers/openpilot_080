@@ -152,7 +152,6 @@ struct CarState {
   brake @5 :Float32;      # this is user pedal only
   brakePressed @6 :Bool;  # this is user pedal only
   brakeLights @19 :Bool;
-  brakeHold @42 :Bool;    # AutoHold
 
   # steering wheel
   steeringAngle @7 :Float32;       # deg
@@ -201,9 +200,7 @@ struct CarState {
   tpmsPressureRr @40 :Float32;
 
   radarDistance @41 :Float32;
-
-  cruiseGapSet @43 :UInt8;
-  standStill @44 :Bool;
+  standStill @42 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -308,6 +305,9 @@ struct CarControl {
   cruiseControl @4 :CruiseControl;
   hudControl @5 :HUDControl;
 
+  applySteer @8 :Float32;
+  applyAccel @9 :Float32;
+
   struct Actuators {
     # range from 0.0 - 1.0
     gas @0: Float32;
@@ -335,9 +335,6 @@ struct CarControl {
     leftLaneVisible @7: Bool;
     rightLaneDepart @8: Bool;
     leftLaneDepart @9: Bool;
-    leadDistance @10:Float32;
-    leadvRel @11:Float32;
-    leadyRel @12:Float32;
 
     enum VisualAlert {
       # these are the choices from the Honda
@@ -447,17 +444,11 @@ struct CarParams {
   communityFeature @46: Bool;  # true if a community maintained feature is detected
   fingerprintSource @49: FingerprintSource;
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
-  mdpsHarness @51: Bool;
+  mdpsBus @51: Int8;
   sasBus @52: Int8;
-  fcaBus @53: Int8;
-  bsmAvailable @54: Bool;
-  lfaAvailable @55: Bool;
-  sccBus @56: Int8;
-  radarDisablePossible @57: Bool;
-  lvrAvailable @58: Bool;
-  evgearAvailable @59: Bool;
-  emsAvailable @60: Bool;
-  standStill @61: Bool;
+  sccBus @53: Int8;
+  spasEnabled @54: Bool;
+  standStill @55: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
@@ -469,10 +460,7 @@ struct CarParams {
     kpV @1 :List(Float32);
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
-    kdBP @4 :List(Float32) = [0.];
-    kdV @5 :List(Float32) = [0.];
-    kf @6 :Float32;
-    newKfTuned @7 :Bool;
+    kf @4 :Float32;
   }
 
   struct LongitudinalPIDTuning {
@@ -485,11 +473,10 @@ struct CarParams {
   }
 
   struct LateralINDITuning {
-    outerLoopGainBP @0 :List(Float32);
-    outerLoopGainV @1 :List(Float32);
-    innerLoopGain @2 :Float32;
-    timeConstant @3 :Float32;
-    actuatorEffectiveness @4 :Float32;
+    outerLoopGain @0 :Float32;
+    innerLoopGain @1 :Float32;
+    timeConstant @2 :Float32;
+    actuatorEffectiveness @3 :Float32;
   }
 
   struct LateralLQRTuning {
@@ -532,7 +519,6 @@ struct CarParams {
     subaruLegacy @22;  # pre-Global platform
     hyundaiLegacy @23;
     hyundaiCommunity @24;
-    hyundaiCommunityNonscc @25;
   }
 
   enum SteerControlType {

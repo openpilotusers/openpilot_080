@@ -81,6 +81,7 @@ keys = {
   b"OpkrEnableLogger": [TxType.PERSISTENT],
   b"OpkrEnableGetoffAlert": [TxType.PERSISTENT],
   b"OpkrAutoResume": [TxType.PERSISTENT],
+  b"OpkrVariableCruise": [TxType.PERSISTENT],
   b"OpkrLaneChangeSpeed": [TxType.PERSISTENT],
   b"OpkrAutoLaneChangeDelay": [TxType.PERSISTENT],
   b"OpkrSteerAngleCorrection": [TxType.PERSISTENT],
@@ -88,6 +89,7 @@ keys = {
   b"FingerprintIssuedFix": [TxType.PERSISTENT],
   b"LdwsCarFix": [TxType.PERSISTENT],
   b"LateralControlMethod": [TxType.PERSISTENT],
+  b"CruiseStatemodeSelInit": [TxType.PERSISTENT],
   b"OuterLoopGain": [TxType.PERSISTENT],
   b"InnerLoopGain": [TxType.PERSISTENT],
   b"TimeConstant": [TxType.PERSISTENT],
@@ -123,11 +125,8 @@ keys = {
   b"DebugUi2": [TxType.PERSISTENT],
   b"OpkrBlindSpotDetect": [TxType.PERSISTENT],
   b"OpkrMaxAngleLimit": [TxType.PERSISTENT],
+  b"OpkrAutoResumeOption": [TxType.PERSISTENT],
   b"OpkrAngleOffsetSelect": [TxType.PERSISTENT],
-  b"OpkrCruiseGapSet": [TxType.PERSISTENT],
-  b"OpkrLatMode": [TxType.PERSISTENT],
-  b"OpkrAccMode": [TxType.PERSISTENT],
-  b"OpkrSlowOnCurve": [TxType.PERSISTENT],
 }
 
 def ensure_bytes(v):

@@ -1,3 +1,5 @@
+import copy
+
 import crcmod
 from common.params import Params
 from selfdrive.car.hyundai.values import CAR, CHECKSUM
@@ -8,10 +10,10 @@ hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
                   lkas11, sys_warning, sys_state, enabled,
                   left_lane, right_lane,
-                  left_lane_depart, right_lane_depart, lfa_available, bus):
-  values = lkas11
-  values["CF_Lkas_LdwsSysState"] = 3 if steer_req else sys_state
-  values["CF_Lkas_SysWarning"] = sys_warning
+                  left_lane_depart, right_lane_depart, bus):
+  values = copy.copy(lkas11)
+  values["CF_Lkas_LdwsSysState"] = sys_state
+  values["CF_Lkas_SysWarning"] = 3 if sys_warning else 0
   values["CF_Lkas_LdwsLHWarning"] = left_lane_depart
   values["CF_Lkas_LdwsRHWarning"] = right_lane_depart
   values["CR_Lkas_StrToqReq"] = apply_steer
@@ -20,10 +22,8 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   values["CF_Lkas_MsgCount"] = frame % 0x10
   values["CF_Lkas_Chksum"] = 0
 
-  if values["CF_Lkas_LdwsOpt_USM"] == 4:
-    values["CF_Lkas_LdwsOpt_USM"] = 3
-
-  if lfa_available:
+  #LKAS 아이콘 에러가 나는경우 이곳에 차량을 넣어주면 해결될 수도 있음
+  if car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_HEV, CAR.SANTA_FE, CAR.KONA_EV, CAR.NIRO_EV]: 
     values["CF_Lkas_LdwsActivemode"] = int(left_lane) + (int(right_lane) << 1)
     values["CF_Lkas_LdwsOpt_USM"] = 2
 
@@ -41,17 +41,19 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
     # Note: the warning is hidden while the blinkers are on
     values["CF_Lkas_SysWarning"] = 4 if sys_warning else 0
 
-  elif car_fingerprint == CAR.GENESIS:
+  elif car_fingerprint == CAR.GENESIS: #구형 제네시스 전용(ex. DH)
     # This field is actually LdwsActivemode
     # Genesis and Optima fault when forwarding while engaged
     values["CF_Lkas_LdwsActivemode"] = 2
+    values["CF_Lkas_SysWarning"] = lkas11["CF_Lkas_SysWarning"]
 
   elif car_fingerprint in [CAR.OPTIMA, CAR.OPTIMA_HEV, CAR.CADENZA, CAR.CADENZA_HEV]:
     values["CF_Lkas_LdwsActivemode"] = 0
-
+    
   ldws_car_fix = int(Params().get('LdwsCarFix')) == "1"
   if ldws_car_fix:
   	values["CF_Lkas_LdwsOpt_USM"] = 3
+
   dat = packer.make_can_msg("LKAS11", 0, values)[2]
 
   if car_fingerprint in CHECKSUM["crc8"]:
@@ -69,16 +71,11 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
 
   return packer.make_can_msg("LKAS11", bus, values)
 
-
-def create_clu11(packer, bus, clu11, button, speed, cnt):
-  values = clu11
-
-  if bus != 1:
-    values["CF_Clu_CruiseSwState"] = button
-    values["CF_Clu_Vanz"] = speed
-  else:
-    values["CF_Clu_Vanz"] = speed
-  values["CF_Clu_AliveCnt1"] = cnt
+def create_clu11(packer, frame, bus, clu11, button, speed):
+  values = copy.copy(clu11)
+  values["CF_Clu_CruiseSwState"] = button
+  values["CF_Clu_Vanz"] = speed
+  values["CF_Clu_AliveCnt1"] = frame % 0x10
   return packer.make_can_msg("CLU11", bus, values)
 
 def create_lfa_mfa(packer, frame, enabled):
@@ -101,115 +98,8 @@ def create_lfa_mfa(packer, frame, enabled):
 
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
 
-def create_scc11(packer, enabled, set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel, gapsetting, standstill,
-                 scc11, usestockscc, nosccradar, scc11cnt, sendaccmode):
-  values = scc11
-
-  if not usestockscc:
-    if enabled:
-      values["VSetDis"] = set_speed
-    if standstill:
-      values["SCCInfoDisplay"] = 0
-    values["DriverAlertDisplay"] = 0
-    values["TauGapSet"] = gapsetting
-    values["ObjValid"] = lead_visible
-    values["ACC_ObjStatus"] = lead_visible
-    values["ACC_ObjRelSpd"] = lead_vrel
-    values["ACC_ObjDist"] = lead_dist
-    values["ACC_ObjLatPos"] = -lead_yrel
-
-    if nosccradar:
-      values["MainMode_ACC"] = sendaccmode
-      values["AliveCounterACC"] = scc11cnt
-  elif nosccradar:
-    values["AliveCounterACC"] = scc11cnt
-
-  return packer.make_can_msg("SCC11", 0, values)
-
-def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepressed, aebcmdact, scc12,
-                 usestockscc, nosccradar, cnt):
-  values = scc12
-
-  if not usestockscc and not aebcmdact:
-    if enabled and not brakepressed:
-      values["ACCMode"] = 2 if gaspressed and (apply_accel > -0.2) else 1
-      if apply_accel < 0.0 and standstill:
-        values["StopReq"] = 1
-      values["aReqRaw"] = apply_accel
-      values["aReqValue"] = apply_accel
-    else:
-      values["ACCMode"] = 0
-      values["aReqRaw"] = 0
-      values["aReqValue"] = 0
-
-    if nosccradar:
-      values["CR_VSM_Alive"] = cnt
-
-    values["CR_VSM_ChkSum"] = 0
-    dat = packer.make_can_msg("SCC12", 0, values)[2]
-    values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
-  elif nosccradar:
-    values["CR_VSM_Alive"] = cnt
-    values["CR_VSM_ChkSum"] = 0
-    dat = packer.make_can_msg("SCC12", 0, values)[2]
-    values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
-
-  return packer.make_can_msg("SCC12", 0, values)
-
-def create_scc13(packer, scc13):
-  values = scc13
-  return packer.make_can_msg("SCC13", 0, values)
-
-def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, gaspressed, standstill, e_vgo):
-  values = scc14
-  if not usestockscc and not aebcmdact:
-    if enabled:
-      values["ACCMode"] = 2 if gaspressed and (accel > -0.2) else 1
-      values["ObjGap"] = objgap
-      if standstill:
-        values["JerkUpperLimit"] = 0.5
-        values["JerkLowerLimit"] = 10.
-        values["ComfortBandUpper"] = 0.
-        values["ComfortBandLower"] = 0.
-        if e_vgo > 0.27:
-          values["ComfortBandUpper"] = 2.
-          values["ComfortBandLower"] = 0.
-      else:
-        #values["JerkUpperLimit"] = 50.
-        #values["JerkLowerLimit"] = 50.
-        #values["ComfortBandUpper"] = 50.
-        #values["ComfortBandLower"] = 50.
-        values["JerkUpperLimit"] = 5
-        values["JerkLowerLimit"] = 0.1
-        values["ComfortBandUpper"] = 1
-        values["ComfortBandLower"] = 0.24
-
-  return packer.make_can_msg("SCC14", 0, values)
-
-def create_scc42a(packer):
-  values = {
-    "CF_FCA_Equip_Front_Radar": 1
-  }
-  return packer.make_can_msg("FRT_RADAR11", 0, values)
-
-def create_fca11(packer, fca11, fca11cnt, fca11supcnt):
-  values = fca11
-  values["CR_FCA_Alive"] = fca11cnt
-  values["Supplemental_Counter"] = fca11supcnt
-  values["CR_FCA_ChkSum"] = 0
-  dat = packer.make_can_msg("FCA11", 0, values)[2]
-  values["CR_FCA_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
-  return packer.make_can_msg("FCA11", 0, values)
-
-def create_fca12(packer):
-  values = {
-    "FCA_USM": 3,
-    "FCA_DrvSetState": 2,
-  }
-  return packer.make_can_msg("FCA12", 0, values)
-
 def create_mdps12(packer, frame, mdps12):
-  values = mdps12
+  values = copy.copy(mdps12)
   values["CF_Mdps_ToiActive"] = 0
   values["CF_Mdps_ToiUnavail"] = 1
   values["CF_Mdps_MsgCount2"] = frame % 0x100
@@ -221,6 +111,70 @@ def create_mdps12(packer, frame, mdps12):
 
   return packer.make_can_msg("MDPS12", 2, values)
 
-def create_scc7d0(cmd):
-  return[2000, 0, cmd, 0]
+def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc_live, scc11):
+  values = copy.copy(scc11)
+  values["AliveCounterACC"] = frame // 2 % 0x10
+  if not scc_live:
+    values["MainMode_ACC"] = 1
+    values["VSetDis"] = set_speed
+    values["ObjValid"] = 1 if enabled else 0
+#  values["ACC_ObjStatus"] = lead_visible
 
+  return packer.make_can_msg("SCC11", 0, values)
+
+def create_scc12(packer, apply_accel, enabled, cnt, scc_live, scc12):
+  values = copy.copy(scc12)
+  values["aReqRaw"] = apply_accel if enabled else 0 #aReqMax
+  values["aReqValue"] = apply_accel if enabled else 0 #aReqMin
+  values["CR_VSM_Alive"] = cnt
+  values["CR_VSM_ChkSum"] = 0
+  if not scc_live:
+    values["ACCMode"] = 1  if enabled else 0 # 2 if gas padel pressed
+
+  dat = packer.make_can_msg("SCC12", 0, values)[2]
+  values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
+
+  return packer.make_can_msg("SCC12", 0, values)
+
+def create_scc13(packer, scc13):
+  values = copy.copy(scc13)
+  return packer.make_can_msg("SCC13", 0, values)
+
+def create_scc14(packer, enabled, scc14):
+  values = copy.copy(scc14)
+  if enabled:
+    values["JerkUpperLimit"] = 3.2
+    values["JerkLowerLimit"] = 0.1
+    values["SCCMode"] = 1
+    values["ComfortBandUpper"] = 0.24
+    values["ComfortBandLower"] = 0.24
+
+  return packer.make_can_msg("SCC14", 0, values)
+
+def create_spas11(packer, car_fingerprint, frame, en_spas, apply_steer, bus):
+  values = {
+    "CF_Spas_Stat": en_spas,
+    "CF_Spas_TestMode": 0,
+    "CR_Spas_StrAngCmd": apply_steer,
+    "CF_Spas_BeepAlarm": 0,
+    "CF_Spas_Mode_Seq": 2,
+    "CF_Spas_AliveCnt": frame % 0x200,
+    "CF_Spas_Chksum": 0,
+    "CF_Spas_PasVol": 0,
+  }
+  dat = packer.make_can_msg("SPAS11", 0, values)[2]
+  if car_fingerprint in CHECKSUM["crc8"]:
+    dat = dat[:6]
+    values["CF_Spas_Chksum"] = hyundai_checksum(dat)
+  else:
+    values["CF_Spas_Chksum"] = sum(dat[:6]) % 256
+  return packer.make_can_msg("SPAS11", bus, values)
+
+def create_spas12(bus):
+  return [1268, 0, "\x00\x00\x00\x00\x00\x00\x00\x00", bus]
+
+def create_ems11(packer, ems11, enabled):
+  values = copy.copy(ems11)
+  if enabled:
+    values["VS"] = 0
+  return packer.make_can_msg("values", 1, ems11)

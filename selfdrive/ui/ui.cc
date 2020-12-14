@@ -16,22 +16,12 @@
 #include "ui.hpp"
 #include "paint.hpp"
 
-std::map<std::string, int> LS_TO_IDX = {{"off", 0}, {"audible", 1}, {"silent", 2}};
-std::map<std::string, int> DF_TO_IDX = {{"traffic", 0}, {"relaxed", 1}, {"roadtrip", 2}, {"auto", 3}};
-
 extern volatile sig_atomic_t do_exit;
 
 int write_param_float(float param, const char* param_name, bool persistent_param) {
   char s[16];
   int size = snprintf(s, sizeof(s), "%f", param);
   return Params(persistent_param).write_db_value(param_name, s, size < sizeof(s) ? size : sizeof(s));
-}
-
-void sa_init(UIState *s, bool full_init) {
-  if (full_init) {
-    s->pm = new PubMaster({"modelLongButton"});
-  }
-  s->scene.mlButtonEnabled = false;  // state isn't saved yet
 }
 
 void ui_init(UIState *s) {
@@ -155,8 +145,6 @@ void update_sockets(UIState *s) {
 
     s->scene.alertTextMsg1 = scene.controls_state.getAlertTextMsg1(); //debug1
     s->scene.alertTextMsg2 = scene.controls_state.getAlertTextMsg2(); //debug2
-
-    s->scene.long_plan_source = scene.controls_state.getLongPlanSource();
 
     // TODO: the alert stuff shouldn't be handled here
     auto alert_sound = scene.controls_state.getAlertSound();
