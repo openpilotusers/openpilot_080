@@ -122,11 +122,19 @@ class CarController():
     self.dRel = 0
     self.yRel = 0
     self.vRel = 0
+    self.dRel2 = 0
+    self.yRel2 = 0
+    self.vRel2 = 0
+    self.cut_in_detection = 0
 
     self.cruise_gap = 0.0
     self.cruise_gap_prev = 0
     self.cruise_gap_set_init = 0
     self.cruise_gap_switch_timer = 0
+    self.standstill_fault_reduce_timer = 0
+    self.cruise_gap_prev2 = 0
+    self.cruise_gap_switch_timer2 = 0
+    self.cruise_gap_switch_timer3 = 0
 
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
@@ -182,6 +190,9 @@ class CarController():
     self.dRel = int(plan.dRel1) #EON Lead
     self.yRel = int(plan.yRel1) #EON Lead
     self.vRel = int(plan.vRel1 * 3.6 + 0.5) #EON Lead
+    self.dRel2 = int(plan.dRel2) #EON Lead
+    self.yRel2 = int(plan.yRel2) #EON Lead
+    self.vRel2 = int(plan.vRel2 * 3.6 + 0.5) #EON Lead
 
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale
@@ -437,6 +448,11 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
+        else:
+          self.standstill_fault_reduce_timer += 1
+          if CS.out.cruiseState.standstill and self.standstill_fault_reduce_timer > 50:
+            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.NONE, clu11_speed))
+            self.standstill_fault_reduce_timer = 0
       else:
         # run only first time when the car stopped
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
@@ -459,6 +475,11 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
+        else:
+          self.standstill_fault_reduce_timer += 1
+          if CS.out.cruiseState.standstill and self.standstill_fault_reduce_timer > 50:
+            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.NONE, clu11_speed))
+            self.standstill_fault_reduce_timer = 0
 
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
@@ -478,6 +499,28 @@ class CarController():
       elif self.cruise_gap_prev == CS.cruiseGapSet:
         self.cruise_gap_set_init = 0
         self.cruise_gap_prev = 0
+      if CS.out.vEgo > 8 and self.dRel - self.dRel2 > 3 and self.cut_in_detection = 0 and self.cruise_gap_prev2 == 0:
+        self.cut_in_detection = 1
+        self.cruise_gap_prev2 = CS.cruiseGapSet
+      elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:
+        self.cruise_gap_switch_timer2 += 1
+        if self.cruise_gap_switch_timer2 > 50:
+          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
+          self.cruise_gap_switch_timer2 = 0
+      elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet == 1.0:
+        self.cruise_gap_switch_timer2 += 1
+        if self.cruise_gap_switch_timer2 > 600:
+          if self.cruise_gap_prev2 != CS.cruiseGapSet:
+            self.cruise_gap_switch_timer3 += 1
+            if self.cruise_gap_switch_timer3 > 50:
+              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
+              self.cruise_gap_switch_timer3 = 0
+      elif self.cruise_gap_prev2 == CS.cruiseGapSet:
+        self.cut_in_detection == 0
+        self.cruise_gap_prev2 = 0
+        self.cruise_gap_switch_timer2 = 0
+        self.cruise_gap_switch_timer3 = 0
+
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
