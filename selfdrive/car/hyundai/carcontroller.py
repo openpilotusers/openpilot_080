@@ -136,6 +136,7 @@ class CarController():
     self.cruise_gap_prev2 = 0
     self.cruise_gap_switch_timer2 = 0
     self.cruise_gap_switch_timer3 = 0
+    self.standstill_status = 0
 
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
@@ -429,6 +430,7 @@ class CarController():
       can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
 
     if CS.out.cruiseState.standstill:
+      self.standstill_status = 1
       if self.opkr_autoresumeoption == 1:
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
           self.last_lead_distance = CS.lead_distance
@@ -523,6 +525,8 @@ class CarController():
         self.cruise_gap_switch_timer2 = 0
         self.cruise_gap_switch_timer3 = 0
 
+    if self.standstill_status == 1 and CS.out.vEgo > 1.4:
+      self.standstill_status = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))

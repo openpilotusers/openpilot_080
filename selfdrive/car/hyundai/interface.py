@@ -270,7 +270,7 @@ class CarInterface(CarInterfaceBase):
     #  events.add(EventName.driverSteering)
     if self.CC.need_brake:
       events.add(EventName.needBrake)
-    if self.CS.cruiseState_standstill:
+    if self.CS.cruiseState_standstill or self.CC.standstill_status == 1:
       #events.add(EventName.standStill)
       self.CP.standStill = True
     else:
