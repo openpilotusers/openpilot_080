@@ -1,4 +1,5 @@
 from cereal import car
+import cereal.messaging as messaging
 from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES, CAR
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
