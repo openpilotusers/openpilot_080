@@ -29,6 +29,7 @@ class Spdctrl(SpdController):
         dRelef = plan.dRel2 #EON Lead
         yRelef = plan.yRel2 #EON Lead
         vRelef = plan.vRel2 * 3.6 + 0.5 #EON Lead
+        lead2_status = plan.status2
         lead_set_speed = int(round(self.cruise_set_speed_kph))
         lead_wait_cmd = 300
 
@@ -79,7 +80,7 @@ class Spdctrl(SpdController):
             lead_wait_cmd = 15
         # 거리 유지 조건
         elif d_delta < 0 or d_delta2 < 0: # 기준유지거리(현재속도*0.4)보다 가까이 있게 된 상황
-            if (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and dRele - dRelef > 3:
+            if (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and dRele - dRelef > 3 and lead2_status:
                 self.seq_step_debug = "끼어들기감지"
                 #lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -5)
                 self.cut_in = True
