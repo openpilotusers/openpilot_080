@@ -525,7 +525,7 @@ class CarController():
         self.cruise_gap_switch_timer2 = 0
         self.cruise_gap_switch_timer3 = 0
 
-    if self.standstill_status == 1 and CS.out.vEgo > 1.4:
+    if self.standstill_status == 1 and CS.out.vEgo > 1:
       self.standstill_status = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
