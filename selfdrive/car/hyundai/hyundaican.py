@@ -22,7 +22,8 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   values["CF_Lkas_MsgCount"] = frame % 0x10
   values["CF_Lkas_Chksum"] = 0
 
-  if car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_HEV, CAR.SANTA_FE, CAR.KONA_EV, CAR.NIRO_EV]:
+  #LKAS 아이콘 에러가 나는경우 이곳에 차량을 넣어주면 해결될 수도 있음
+  if car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_HEV, CAR.SANTA_FE, CAR.KONA_EV, CAR.NIRO_EV]: 
     values["CF_Lkas_LdwsActivemode"] = int(left_lane) + (int(right_lane) << 1)
     values["CF_Lkas_LdwsOpt_USM"] = 2
 
@@ -40,7 +41,7 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
     # Note: the warning is hidden while the blinkers are on
     values["CF_Lkas_SysWarning"] = 4 if sys_warning else 0
 
-  elif car_fingerprint == CAR.GENESIS:
+  elif car_fingerprint == CAR.GENESIS: #구형 제네시스 전용(ex. DH)
     # This field is actually LdwsActivemode
     # Genesis and Optima fault when forwarding while engaged
     values["CF_Lkas_LdwsActivemode"] = 2
@@ -48,13 +49,6 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
 
   elif car_fingerprint in [CAR.OPTIMA, CAR.OPTIMA_HEV, CAR.CADENZA, CAR.CADENZA_HEV]:
     values["CF_Lkas_LdwsActivemode"] = 0
-
-  elif car_fingerprint == CAR.SONATA_LF_TURBO:
-    values["CF_Lkas_Bca_R"] = 0
-    values["CF_Lkas_FcwOpt_USM"] = 2 if enabled else 1
-    values["CF_Lkas_LdwsOpt_USM"] = 2
-    values["CF_Lkas_FcwOpt_USM"] = 2 if enabled else 1
-    values["CF_Lkas_SysWarning"] = 4 if sys_warning else 0
     
   ldws_car_fix = int(Params().get('LdwsCarFix')) == "1"
   if ldws_car_fix:
