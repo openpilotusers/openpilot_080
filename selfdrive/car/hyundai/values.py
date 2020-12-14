@@ -568,7 +568,7 @@ FEATURES = {
   # send LFA MFA message for new HKG models
   "send_lfa_mfa": set([]),
 
-  "allow_high_steer": set([CAR.KONA, CAR.KONA_EV, CAR.KONA_HEV, CAR.KIA_NIRO_EV]),
+  "allow_high_steer": set([CAR.KONA, CAR.KONA_EV, CAR.KONA_HEV, CAR.NIRO_EV]),
 }
 
 ELEC_VEH = set([CAR.IONIQ_EV, CAR.KONA_EV, CAR.NIRO_EV, CAR.NEXO])
