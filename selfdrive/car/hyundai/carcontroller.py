@@ -526,7 +526,7 @@ class CarController():
         self.cruise_gap_switch_timer2 = 0
         self.cruise_gap_switch_timer3 = 0
     
-    if CS.brakeLights and CS.out.vEgo == 0 and not CS.acc_active:
+    if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.acc_active:
       self.standstill_status_timer += 1
       if self.standstill_status_timer > 200:
         self.standstill_status = 1
