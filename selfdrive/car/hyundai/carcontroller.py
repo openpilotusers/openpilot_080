@@ -137,6 +137,7 @@ class CarController():
     self.cruise_gap_switch_timer2 = 0
     self.cruise_gap_switch_timer3 = 0
     self.standstill_status = 0
+    self.standstill_status_timer = 0
 
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
@@ -524,7 +525,12 @@ class CarController():
         self.cruise_gap_prev2 = 0
         self.cruise_gap_switch_timer2 = 0
         self.cruise_gap_switch_timer3 = 0
-
+    
+    if CS.brakeLights and CS.out.vEgo == 0 and not CS.acc_active:
+      self.standstill_status_timer += 1
+      if self.standstill_status_timer > 200:
+        self.standstill_status = 1
+        self.standstill_status_timer = 0
     if self.standstill_status == 1 and CS.out.vEgo > 1:
       self.standstill_status = 0
 
