@@ -235,8 +235,6 @@ class Planner():
 
       v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit, v_speedlimit_ahead])
 
-      print('v_speed={} m/s'.format(v_cruise_setpoint))
-
       self.v_cruise, self.a_cruise = speed_smoother(self.v_acc_start, self.a_acc_start,
                                                     v_cruise_setpoint,
                                                     accel_limits_turns[1], accel_limits_turns[0],
