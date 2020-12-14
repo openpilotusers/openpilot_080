@@ -1132,7 +1132,9 @@ static void ui_draw_vision_header(UIState *s) {
   ui_draw_vision_event(s);
   bb_ui_draw_UI(s);
   ui_draw_tpms(s);
-  ui_draw_standstill(s);
+  if (s->scene.controls_state.getEnabled()) {
+    ui_draw_standstill(s);
+  }
 }
 
 static void ui_draw_vision_car(UIState *s) {
