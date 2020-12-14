@@ -444,7 +444,7 @@ static void ui_draw_debug(UIState *s)
 {
   UIScene &scene = s->scene;
 
-  int ui_viz_rx = scene.viz_rect.x + 300;
+  int ui_viz_rx = scene.viz_rect.x + 275;
   int ui_viz_ry = 108;
   int ui_viz_rx_center = scene.viz_rect.centerX();
   
@@ -455,39 +455,39 @@ static void ui_draw_debug(UIState *s)
     ui_draw_text(s->vg, 0, 1078, scene.alertTextMsg2.c_str(), 50, COLOR_WHITE_ALPHA(150), s->font_sans_semibold);
   }
 
-  nvgFontSize(s->vg, 43);
+  nvgFontSize(s->vg, 42);
   nvgFillColor(s->vg, COLOR_WHITE_ALPHA(150));
   if (s->nDebugUi2 == 1) {
-    ui_print(s, ui_viz_rx, ui_viz_ry, "Live Parameters");
-    ui_print(s, ui_viz_rx, ui_viz_ry+50, "·SR:%.2f", scene.liveParams.steerRatio);
-    ui_print(s, ui_viz_rx, ui_viz_ry+100, "·AOfs:%.2f", scene.liveParams.angleOffset);
-    ui_print(s, ui_viz_rx, ui_viz_ry+150, "·AOAVG:%.2f", scene.liveParams.angleOffsetAverage);
-    ui_print(s, ui_viz_rx, ui_viz_ry+200, "·SFact:%.2f", scene.liveParams.stiffnessFactor);
+    //ui_print(s, ui_viz_rx, ui_viz_ry, "Live Parameters");
+    ui_print(s, ui_viz_rx, ui_viz_ry+250, "SR:%.2f", scene.liveParams.steerRatio);
+    //ui_print(s, ui_viz_rx, ui_viz_ry+100, "AOfs:%.2f", scene.liveParams.angleOffset);
+    ui_print(s, ui_viz_rx, ui_viz_ry+300, "AA:%.2f", scene.liveParams.angleOffsetAverage);
+    ui_print(s, ui_viz_rx, ui_viz_ry+350, "SF:%.2f", scene.liveParams.stiffnessFactor);
 
-    ui_print(s, ui_viz_rx, ui_viz_ry+270, "ADelay:%.2f", scene.pathPlan.steerActuatorDelay);
-    ui_print(s, ui_viz_rx, ui_viz_ry+320, "SRCost:%.2f", scene.pathPlan.steerRateCost);
-    ui_print(s, ui_viz_rx, ui_viz_ry+370, "OutScale:%.3f", scene.output_scale);
-    ui_print(s, ui_viz_rx, ui_viz_ry+420, "Awareness:%.2f", scene.awareness_status);
-    ui_print(s, ui_viz_rx, ui_viz_ry+470, "FaceProb:%.2f", scene.face_prob);
+    ui_print(s, ui_viz_rx, ui_viz_ry+400, "AD:%.2f", scene.pathPlan.steerActuatorDelay);
+    ui_print(s, ui_viz_rx, ui_viz_ry+450, "SC:%.2f", scene.pathPlan.steerRateCost);
+    ui_print(s, ui_viz_rx, ui_viz_ry+500, "OS:%.3f", scene.output_scale);
+    //ui_print(s, ui_viz_rx, ui_viz_ry+400, "Awareness:%.2f", scene.awareness_status);
+    //ui_print(s, ui_viz_rx, ui_viz_ry+470, "FaceProb:%.2f", scene.face_prob);
     if (s->lateral_control == 0) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:PID");
+      ui_print(s, ui_viz_rx, ui_viz_ry+550, "LaC:PID");
     } else if (s->lateral_control == 1) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:INDI");
+      ui_print(s, ui_viz_rx, ui_viz_ry+550, "LaC:INDI");
     } else if (s->lateral_control == 2) {
-      ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:LQR");
+      ui_print(s, ui_viz_rx, ui_viz_ry+550, "LaC:LQR");
     }
     nvgFontSize(s->vg, 45);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-    ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
+    //ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
     if (scene.curvature >= 0.001) {
-      ui_print(s, ui_viz_rx_center, ui_viz_ry+700, "↖%.4f　", abs(scene.curvature));
+      ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "↖%.4f　", abs(scene.curvature));
     } else if (scene.curvature <= -0.001) {
-      ui_print(s, ui_viz_rx_center, ui_viz_ry+700, "　%.4f↗", abs(scene.curvature));
+      ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "　%.4f↗", abs(scene.curvature));
     } else {
-      ui_print(s, ui_viz_rx_center, ui_viz_ry+700, "　%.4f　", abs(scene.curvature));
+      ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "　%.4f　", abs(scene.curvature));
     }
-    ui_print(s, ui_viz_rx_center, ui_viz_ry+750, " 좌측간격(m)    차선폭(m)    우측간격(m)");
-    ui_print(s, ui_viz_rx_center, ui_viz_ry+800, "%.2f                    %.2f                    %.2f", scene.pathPlan.lPoly, scene.pathPlan.laneWidth, abs(scene.pathPlan.rPoly));
+    ui_print(s, ui_viz_rx_center, ui_viz_ry+700, " 좌측간격(m)    차선폭(m)    우측간격(m)");
+    ui_print(s, ui_viz_rx_center, ui_viz_ry+750, "%.2f                    %.2f                    %.2f", scene.pathPlan.lPoly, scene.pathPlan.laneWidth, abs(scene.pathPlan.rPoly));
   }
 }
 
