@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from cereal import car
 from selfdrive.config import Conversions as CV
-from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons, FEATURES
-from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
+#from selfdrive.car.hyundai.values import Ecu, CAR, FINGERPRINTS, Buttons, FEATURES
+from selfdrive.car.hyundai.values import CAR, Buttons
+from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 from common.params import Params
@@ -69,9 +70,6 @@ class CarInterface(CarInterfaceBase):
     elif candidate == CAR.GENESIS_G90:
       ret.mass = 2200
       ret.wheelbase = 3.15
-    elif candidate == CAR.GENESIS_G90_L:
-      ret.mass = 2290
-      ret.wheelbase = 3.45
     elif candidate in [CAR.SANTA_FE]:
       ret.mass = 1694 + STD_CARGO_KG
       ret.wheelbase = 2.766
@@ -81,9 +79,6 @@ class CarInterface(CarInterfaceBase):
     elif candidate in [CAR.SONATA19, CAR.SONATA19_HEV]:
       ret.mass = 4497. * CV.LB_TO_KG
       ret.wheelbase = 2.804
-    elif candidate == CAR.SONATA_LF_TURBO:
-      ret.mass = 1590. + STD_CARGO_KG
-      ret.wheelbase = 2.805
     elif candidate == CAR.PALISADE:
       ret.mass = 1999. + STD_CARGO_KG
       ret.wheelbase = 2.90
@@ -96,7 +91,7 @@ class CarInterface(CarInterfaceBase):
     elif candidate in [CAR.KONA_HEV, CAR.KONA_EV]:
       ret.mass = 1685. + STD_CARGO_KG
       ret.wheelbase = 2.7
-    elif candidate in [CAR.IONIQ, CAR.IONIQ_EV_LTD]:
+    elif candidate in [CAR.IONIQ_HEV, CAR.IONIQ_EV]:
       ret.mass = 1490. + STD_CARGO_KG   #weight per hyundai site https://www.hyundaiusa.com/ioniq-electric/specifications.aspx
       ret.wheelbase = 2.7
     elif candidate in [CAR.GRANDEUR, CAR.GRANDEUR_HEV]:
@@ -189,7 +184,8 @@ class CarInterface(CarInterfaceBase):
     ret.brakeMaxBP = [0., 20.]
     ret.brakeMaxV = [1., 0.8]
 
-    ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera)
+    #ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera)
+    ret.enableCamera = True
 
     ret.stoppingControl = True
     ret.startAccel = 0.0
