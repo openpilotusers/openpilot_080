@@ -178,7 +178,7 @@
   "KR": {
     "Default": [
       {
-        "speed": "110", 
+        "speed": "100", 
         "tags": {
           "highway": "motorway"
         }
@@ -196,7 +196,7 @@
         }
       }, 
       {
-        "speed": "50", 
+        "speed": "60", 
         "tags": {
           "highway": "secondary"
         }
@@ -259,6 +259,54 @@
         "speed": "30", 
         "tags": {
           "highway": "living_street"
+        }
+      },
+      {
+        "speed": "60", 
+        "tags": {
+          "maxspeed": "60"
+        }
+      }, 
+      {
+        "speed": "70", 
+        "tags": {
+          "maxspeed": "70"
+        }
+      }, 
+      {
+        "speed": "80", 
+        "tags": {
+          "maxspeed": "80"
+        }
+      }, 
+      {
+        "speed": "90", 
+        "tags": {
+          "maxspeed": "90"
+        }
+      },
+      {
+        "speed": "100", 
+        "tags": {
+          "maxspeed": "100"
+        }
+      },
+      {
+        "speed": "110", 
+        "tags": {
+          "maxspeed": "110"
+        }
+      },
+      {
+        "speed": "110", 
+        "tags": {
+          "name": "서해안고속도로"
+        }
+      },
+      {
+        "speed": "110", 
+        "tags": {
+          "name": "논산천안고속도로"
         }
       }
     ]
