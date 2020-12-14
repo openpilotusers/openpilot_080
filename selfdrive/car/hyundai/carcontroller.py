@@ -375,7 +375,7 @@ class CarController():
     if frame % 2 and CS.mdps_bus: # send clu11 to mdps if it is not on bus 0
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-    str_log1 = '곡률={:03.0f}  토크={:03.0f}  프레임률={:03.0f} ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(self.model_speed), abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
+    str_log1 = 'CV={:03.0f}  TQ={:03.0f}  FR={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(self.model_speed), abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
     trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
     if CS.out.cruiseState.modeSel == 0 and self.mode_change_switch == 3:
@@ -421,7 +421,7 @@ class CarController():
         self.leadcar_status = "-"
 
 
-      str_log2 = '주행모드={:s}  MDPS상태={:s}  LKAS버튼={:s}  크루즈갭={:1.0f}  선행차인식={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
+      str_log2 = '모드={:s}  MDPS상태={:s}  LKAS버튼={:s}  크루즈갭={:1.0f}  선행차인식={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
       trace1.printf2( '{}'.format( str_log2 ) )
 
 
