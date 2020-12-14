@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from cereal import car
 from selfdrive.config import Conversions as CV
-#from selfdrive.car.hyundai.values import Ecu, CAR, FINGERPRINTS, Buttons, FEATURES
 from selfdrive.car.hyundai.values import CAR, Buttons
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
@@ -184,7 +183,6 @@ class CarInterface(CarInterfaceBase):
     ret.brakeMaxBP = [0., 20.]
     ret.brakeMaxV = [1., 0.8]
 
-    #ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera)
     ret.enableCamera = True
 
     ret.stoppingControl = True

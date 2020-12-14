@@ -573,8 +573,8 @@ FEATURES = {
                     CAR.GRANDEUR_HEV, CAR.NEXO, CAR.NIRO_HEV},
   # send LFA MFA message for new HKG models
   "send_lfa_mfa": {},
-  "has_scc13": set([]), 
-  "has_scc14": set([]), 
+  "has_scc13": set([]),
+  "has_scc14": set([]),
   # these cars use the FCA11 message for the AEB and FCW signals, all others use SCC12
   "use_fca": {CAR.SONATA, CAR.ELANTRA, CAR.ELANTRA_GT_I30, CAR.STINGER, CAR.IONIQ_HEV, CAR.KONA, CAR.KONA_EV, CAR.FORTE,
               CAR.PALISADE, CAR.GENESIS_G70},
