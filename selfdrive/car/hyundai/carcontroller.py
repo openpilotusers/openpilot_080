@@ -454,12 +454,8 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 5번 눌러줌 오류로 주차브레이크로 걸리는지 테스트 하기 위한 용도?
-        elif self.standstill_fault_reduce_timer == 100 and self.opkr_autoresume:
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 6번 눌러줌 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
+        elif 100 < self.standstill_fault_reduce_timer < 107 and self.opkr_autoresume:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
