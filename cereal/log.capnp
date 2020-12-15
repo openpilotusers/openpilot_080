@@ -896,6 +896,7 @@ struct PathPlan {
   outputScale @22 :Float32;
   steerRateCost @23 :Float32;
   standstillElapsedTime @24 :Float32;
+  vCruiseSet @25 :Float32;
 
   enum Desire {
     none @0;

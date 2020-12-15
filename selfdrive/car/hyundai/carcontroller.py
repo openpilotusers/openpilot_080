@@ -203,6 +203,7 @@ class CarController():
 
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale
+    self.vCruiseSet = path_plan.vCruiseSet
 
     self.angle_steers_des = path_plan.angleSteers - path_plan.angleOffset
     self.angle_steers = CS.out.steeringAngle
@@ -457,9 +458,6 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-        # 가변 크루즈를 위한 정차시 출발속도 조정, 45미만일경우
-        elif run_speed_ctrl and self.opkr_autoresume and int(CS.VSetDis) < 45:
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         # 처음 standstill 진입 후 gap세팅 및 출발속도 45설정 후 1초후에 RES or SET을 눌러줌. 상태메시지 바뀔때까지 최대 6회 누르며 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
         elif 100 < self.standstill_fault_reduce_timer < 107 and self.opkr_autoresume and int(CS.VSetDis) >= 45:
           if self.v_set_dis_prev >= int(CS.VSetDis):
@@ -505,7 +503,9 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-
+    # 가변 크루즈를 위한 정차시 출발속도 조정, 45미만일경우
+    elif run_speed_ctrl and self.opkr_autoresume and int(CS.VSetDis) < 45 and self.standstill_status == 1 and self.vCruiseSet >= 45:
+      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0

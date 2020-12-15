@@ -124,6 +124,7 @@ class PathPlanner():
     active = sm['controlsState'].active
     anglesteer_current = sm['controlsState'].angleSteers
     anglesteer_desire = sm['controlsState'].angleSteersDes
+    v_cruise_kph = sm['controlsState'].vCruise
 
     #live_steerratio = sm['liveParameters'].steerRatio
     mode_select = sm['carState'].cruiseState.modeSel
@@ -316,6 +317,7 @@ class PathPlanner():
     plan_send.pathPlan.steerActuatorDelay = self.new_steer_actuator_delay
     plan_send.pathPlan.steerRateCost = self.new_steer_rate_cost
     plan_send.pathPlan.outputScale = output_scale
+    plan_send.pathPlan.vCruiseSet = v_cruise_kph
 
     if stand_still:
       self.standstill_elapsed_time += DT_MDL
