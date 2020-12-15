@@ -537,7 +537,7 @@ static void ui_draw_vision_maxspeed(UIState *s) {
     maxspeed_calc = maxspeed + 0.5;
     speedlim_calc = speedlimit * 3.6 + 0.5;
   }
-  int speed_lim_off = speedlim_calc * (1 + s->speed_lim_off / 100.0);
+  int speed_lim_off = s->speed_lim_off;
   bool is_cruise_set = (maxspeed != 0 && maxspeed != SET_SPEED_NA);
   bool is_speedlim_valid = s->scene.speedlimit_valid;
   bool is_set_over_limit = is_speedlim_valid && s->scene.controls_state.getEnabled() &&
@@ -590,7 +590,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
   if (s->is_ego_over_limit) {
     hysteresis_offset = 0.0;
   }
-  s->is_ego_over_limit = is_speedlim_valid && s->scene.controls_state.getVEgo() > (speedlimit + hysteresis_offset);
+  s->is_ego_over_limit = is_speedlim_valid && s->scene.controls_state.getVEgo() > (speedlimit + s->speed_lim_off + hysteresis_offset);
 
   int viz_speedlim_w = 180;
   int viz_speedlim_h = 202;

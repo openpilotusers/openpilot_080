@@ -405,6 +405,7 @@ void ui_update(UIState *s) {
     read_param(&s->nOpkrAutoScreenOff, "OpkrAutoScreenOff");
     read_param(&s->nOpkrUIBrightness, "OpkrUIBrightness");
     read_param(&s->nOpkrUIVolumeBoost, "OpkrUIVolumeBoost");
+    read_param(&s->speed_lim_off, "OpkrSpeedLimitOffset");
     read_param(&s->limit_set_speed, "LimitSetSpeed");
     read_param(&s->nDebugUi1, "DebugUi1");
     read_param(&s->nDebugUi2, "DebugUi2");
