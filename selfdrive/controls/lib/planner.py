@@ -156,6 +156,7 @@ class Planner():
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
 
+    speed_ahead_distance = default_brake_distance
     v_speedlimit = NO_CURVATURE_SPEED
     v_curvature_map = NO_CURVATURE_SPEED
     v_speedlimit_ahead = NO_CURVATURE_SPEED
