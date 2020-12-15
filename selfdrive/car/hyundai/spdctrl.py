@@ -22,10 +22,12 @@ class Spdctrl(SpdController):
         self.cruise_gap = 0.0
         self.cut_in = False
         self.osm_enable = False
+        self.osm_spdlimit_offset = 0
         self.target_speed = 0
 
     def update_lead(self, sm, CS, dRel, yRel, vRel):
         self.osm_enable = Params().get("LimitSetSpeed", encoding='utf8') == "1"
+        self.osm_spdlimit_offset = int(Params().get("SpeedLimitOffset", encoding='utf8'))
         plan = sm['plan']
         dRele = plan.dRel1 #EON Lead
         yRele = plan.yRel1 #EON Lead
@@ -83,7 +85,7 @@ class Spdctrl(SpdController):
             lead_set_speed = int(round(CS.clu_Vanz)) + 5
             self.seq_step_debug = "운전자가속"
             lead_wait_cmd = 15
-        elif (int(round(self.target_speed))+5) < int(CS.VSetDis) and self.osm_enable and int(round(self.target_speed)) < int(round(self.cruise_set_speed_kph)):
+        elif (int(round(self.target_speed))+self.osm_spdlimit_offset) < int(CS.VSetDis) and self.osm_enable and int(round(self.target_speed)) < int(round(self.cruise_set_speed_kph)):
             self.seq_step_debug = "맵기반감속"
             lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 50, -1)
         # 거리 유지 조건
@@ -234,7 +236,7 @@ class Spdctrl(SpdController):
         if self.cruise_gap != CS.cruiseGapSet:
             self.cruise_gap = CS.cruiseGapSet
 
-        str3 = '모드={:s}  속도={:03.0f}/{:03.0f}  타이머={:03.0f}/{:03.0f}  TS={:03.0f}'.format( self.steer_mode, set_speed, CS.VSetDis, long_wait_cmd, self.long_curv_timer, int(round(self.target_speed))+5 )
+        str3 = '모드={:s}  속도={:03.0f}/{:03.0f}  타이머={:03.0f}/{:03.0f}  TS={:03.0f}'.format( self.steer_mode, set_speed, CS.VSetDis, long_wait_cmd, self.long_curv_timer, int(round(self.target_speed))+self.osm_spdlimit_offset )
         str4 = '  RD=D:{:03.0f}/V:{:03.0f}  CG={:1.0f}  구분={:s}'.format(  CS.lead_distance, CS.lead_objspd, self.cruise_gap, self.seq_step_debug )
 
         str5 = str3 + str4
