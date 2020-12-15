@@ -504,27 +504,27 @@ class CarController():
       elif self.cruise_gap_prev == CS.cruiseGapSet:
         self.cruise_gap_set_init = 0
         self.cruise_gap_prev = 0
-      if CS.out.vEgo > 8 and self.lead2_status and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
-        self.cut_in_detection = 1
-        self.cruise_gap_prev2 = CS.cruiseGapSet
-      elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:
-        self.cruise_gap_switch_timer2 += 1
-        if self.cruise_gap_switch_timer2 > 150:
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
-          self.cruise_gap_switch_timer2 = 0
-      elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet == 1.0:
-        self.cruise_gap_switch_timer2 += 1
-        if self.cruise_gap_switch_timer2 > 600:
-          if self.cruise_gap_prev2 != CS.cruiseGapSet:
-            self.cruise_gap_switch_timer3 += 1
-            if self.cruise_gap_switch_timer3 > 50:
-              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
-              self.cruise_gap_switch_timer3 = 0
-      elif self.cruise_gap_prev2 == CS.cruiseGapSet:
-        self.cut_in_detection == 0
-        self.cruise_gap_prev2 = 0
-        self.cruise_gap_switch_timer2 = 0
-        self.cruise_gap_switch_timer3 = 0
+      #if CS.out.vEgo > 8 and self.lead2_status and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
+      #  self.cut_in_detection = 1
+      #  self.cruise_gap_prev2 = CS.cruiseGapSet
+      #elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:
+      #  self.cruise_gap_switch_timer2 += 1
+      #  if self.cruise_gap_switch_timer2 > 150:
+      #    can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
+      #    self.cruise_gap_switch_timer2 = 0
+      #elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet == 1.0:
+      #  self.cruise_gap_switch_timer2 += 1
+      #  if self.cruise_gap_switch_timer2 > 600:
+      #    if self.cruise_gap_prev2 != CS.cruiseGapSet:
+      #      self.cruise_gap_switch_timer3 += 1
+      #      if self.cruise_gap_switch_timer3 > 50:
+      #        can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
+      #        self.cruise_gap_switch_timer3 = 0
+      #elif self.cruise_gap_prev2 == CS.cruiseGapSet:
+      #  self.cut_in_detection == 0
+      #  self.cruise_gap_prev2 = 0
+      #  self.cruise_gap_switch_timer2 = 0
+      #  self.cruise_gap_switch_timer3 = 0
     
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.acc_active:
       self.standstill_status_timer += 1
