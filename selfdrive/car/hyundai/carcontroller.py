@@ -127,6 +127,7 @@ class CarController():
     self.vRel2 = 0
     self.lead2_status = False
     self.cut_in_detection = 0
+    self.v_set_dis_prev = 180
 
     self.cruise_gap = 0.0
     self.cruise_gap_prev = 0
@@ -377,7 +378,7 @@ class CarController():
     if frame % 2 and CS.mdps_bus: # send clu11 to mdps if it is not on bus 0
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-    str_log1 = '곡률={:03.0f}  토크={:03.0f}  프레임률={:03.0f} ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(self.model_speed), abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
+    str_log1 = 'CV={:03.0f}  TQ={:03.0f}  FR={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(self.model_speed), abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
     trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
     if CS.out.cruiseState.modeSel == 0 and self.mode_change_switch == 3:
@@ -423,7 +424,7 @@ class CarController():
         self.leadcar_status = "-"
 
 
-      str_log2 = '주행모드={:s}  MDPS상태={:s}  LKAS버튼={:s}  크루즈갭={:1.0f}  선행차인식={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
+      str_log2 = '모드={:s}  MDPS상태={:s}  LKAS버튼={:s}  크루즈갭={:1.0f}  선행차인식={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
       trace1.printf2( '{}'.format( str_log2 ) )
 
 
@@ -454,14 +455,29 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 한번 눌러줌
-        elif self.standstill_fault_reduce_timer == 100 and self.opkr_autoresume:
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES or SET을 눌러줌. 상태메시지 바뀔때까지 최대 6회 누르며 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
+        elif 100 < self.standstill_fault_reduce_timer < 107 and self.opkr_autoresume:
+          if self.v_set_dis_prev >= int(CS.VSetDis):
+            self.v_set_dis_prev = int(CS.VSetDis)
+            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+          elif self.v_set_dis_prev <= int(CS.VSetDis):
+            self.v_set_dis_prev = int(CS.VSetDis)
+            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.SET_DECEL, clu11_speed))
+          self.standstill_fault_reduce_timer += 1
         elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
-           # 30초마다 RES를 임의로 눌러줌. 재출발시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
-          if self.standstill_fault_reduce_timer % 3000 == 0:
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+           # 30초마다 RES or SET을 최대6번 눌러줌. 재출발 시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
+          if self.standstill_fault_reduce_timer // 3000 >= 1:
+            if 3000 < self.standstill_fault_reduce_timer < 3007 and self.v_set_dis_prev >= int(CS.VSetDis):
+              self.v_set_dis_prev = int(CS.VSetDis)
+              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+              if self.standstill_fault_reduce_timer >= 3006:
+                self.standstill_fault_reduce_timer = 108
+            elif 3000 < self.standstill_fault_reduce_timer < 3007 and self.v_set_dis_prev <= int(CS.VSetDis):
+              self.v_set_dis_prev = int(CS.VSetDis)
+              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.SET_DECEL, clu11_speed))
+              if self.standstill_fault_reduce_timer >= 3006:
+                self.standstill_fault_reduce_timer = 108
       else:
         # run only first time when the car stopped
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
@@ -488,7 +504,6 @@ class CarController():
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0
-      self.standstill_fault_reduce_timer = 0
     elif run_speed_ctrl:
       is_sc_run = self.SC.update(CS, sm, self)
       if is_sc_run:
@@ -533,6 +548,8 @@ class CarController():
         self.standstill_status_timer = 0
     if self.standstill_status == 1 and CS.out.vEgo > 1:
       self.standstill_status = 0
+      self.standstill_fault_reduce_timer = 0
+      self.v_set_dis_prev = 180
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
