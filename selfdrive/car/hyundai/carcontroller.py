@@ -493,8 +493,6 @@ class CarController():
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0
-    elif 0 < CS.out.vEgo < 1:
-     self.standstill_fault_reduce_timer = 0  
     elif run_speed_ctrl:
       is_sc_run = self.SC.update(CS, sm, self)
       if is_sc_run:
@@ -539,6 +537,7 @@ class CarController():
         self.standstill_status_timer = 0
     if self.standstill_status == 1 and CS.out.vEgo > 1:
       self.standstill_status = 0
+      self.standstill_fault_reduce_timer = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
