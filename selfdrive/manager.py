@@ -600,7 +600,6 @@ def main():
     ("IsUploadRawEnabled", "1"),
     ("IsLdwEnabled", "1"),
     ("IsGeofenceEnabled", "-1"),
-    ("SpeedLimitOffset", "0"),
     ("LimitSetSpeed", "0"),
     ("LimitSetSpeedNeural", "0"),
     ("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')),
@@ -661,6 +660,7 @@ def main():
     ("OpkrMaxAngleLimit", "90"),
     ("OpkrAutoResumeOption", "0"),
     ("OpkrAngleOffsetSelect", "0"),
+    ("OpkrSpeedLimitOffset", "0"),
   ]
 
   # set unset params

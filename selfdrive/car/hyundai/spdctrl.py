@@ -27,7 +27,7 @@ class Spdctrl(SpdController):
 
     def update_lead(self, sm, CS, dRel, yRel, vRel):
         self.osm_enable = Params().get("LimitSetSpeed", encoding='utf8') == "1"
-        self.osm_spdlimit_offset = int(Params().get("SpeedLimitOffset", encoding='utf8'))
+        self.osm_spdlimit_offset = int(Params().get("OpkrSpeedLimitOffset", encoding='utf8'))
         plan = sm['plan']
         dRele = plan.dRel1 #EON Lead
         yRele = plan.yRel1 #EON Lead

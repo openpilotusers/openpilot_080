@@ -133,9 +133,10 @@ class Planner():
     fixed_offset = op_params.get('speed_offset')
     if self.last_time > 5:
       try:
-        self.offset = int(self.params.get("SpeedLimitOffset", encoding='utf8'))
+        #self.offset = int(self.params.get("SpeedLimitOffset", encoding='utf8'))
+        self.offset = 0
       except (TypeError,ValueError):
-        self.params.delete("SpeedLimitOffset")
+        #self.params.delete("SpeedLimitOffset")
         self.offset = 0
       self.osm = self.params.get("LimitSetSpeed", encoding='utf8') == "1"
       self.last_time = 0

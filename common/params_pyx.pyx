@@ -58,7 +58,6 @@ keys = {
   b"ReleaseNotes": [TxType.PERSISTENT],
   b"ShouldDoUpdate": [TxType.CLEAR_ON_MANAGER_START],
   b"SubscriberInfo": [TxType.PERSISTENT],
-  b"SpeedLimitOffset": [TxType.PERSISTENT],
   b"TermsVersion": [TxType.PERSISTENT],
   b"TrainingVersion": [TxType.PERSISTENT],
   b"UpdateAvailable": [TxType.CLEAR_ON_MANAGER_START],
@@ -127,6 +126,7 @@ keys = {
   b"OpkrMaxAngleLimit": [TxType.PERSISTENT],
   b"OpkrAutoResumeOption": [TxType.PERSISTENT],
   b"OpkrAngleOffsetSelect": [TxType.PERSISTENT],
+  b"OpkrSpeedLimitOffset": [TxType.PERSISTENT],
 }
 
 def ensure_bytes(v):

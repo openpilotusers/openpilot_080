@@ -292,7 +292,7 @@ class SpdController():
         dec_step_cmd = 1
 
         self.osm_spd_enable = Params().get("LimitSetSpeed", encoding='utf8') == "1"
-        self.osm_spd_limit_offset = int(Params().get("SpeedLimitOffset", encoding='utf8'))
+        self.osm_spd_limit_offset = int(Params().get("OpkrSpeedLimitOffset", encoding='utf8'))
         if self.long_curv_timer < long_wait_cmd:
             pass
         elif delta > 0:

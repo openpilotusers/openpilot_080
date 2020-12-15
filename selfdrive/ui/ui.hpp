@@ -290,7 +290,6 @@ typedef struct UIState {
   bool longitudinal_control;
   bool limit_set_speed;
   bool is_ego_over_limit;
-  float speed_lim_off;
   int is_OpenpilotViewEnabled;
   int lateral_control;
 
