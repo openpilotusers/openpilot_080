@@ -124,7 +124,7 @@ class Spdctrl(SpdController):
             self.cut_in = False
             if dRel >= 30:
                 self.seq_step_debug = "정차차량 감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 8, -10)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 10, -10)
         elif self.cruise_set_speed_kph > int(round((CS.clu_Vanz))):  #이온설정속도가 차량속도보다 큰경우
             self.cut_in = False
             if 10 > dRel > 3 and lead_objspd < 0 and 1 < int(CS.clu_Vanz) <= 7 and CS.VSetDis < 45:
