@@ -294,9 +294,9 @@ class SpdController():
         if self.long_curv_timer < long_wait_cmd:
             pass
         elif delta > 0:
-            if (int(round(CC.target_map_speed))+5) > int(CS.VSetDis) and self.osm_spd_enable:
-                set_speed = int(CS.VSetDis) + dec_step_cmd
-                btn_type = Buttons.RES_ACCEL
+            if (int(round(CC.target_map_speed))+5) == int(CS.VSetDis) and self.osm_spd_enable:
+                set_speed = int(CS.VSetDis) + 0
+                btn_type = Buttons.NONE
                 self.long_curv_timer = 0
             else:
                 set_speed = int(CS.VSetDis) + dec_step_cmd

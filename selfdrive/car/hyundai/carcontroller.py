@@ -456,14 +456,17 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 6번 눌러줌 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
+        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 6번 눌러줌. 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
         elif 100 < self.standstill_fault_reduce_timer < 107 and self.opkr_autoresume:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
-           # 30초마다 RES를 임의로 눌러줌. 재출발시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
-          if self.standstill_fault_reduce_timer % 3000 == 0:
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+           # 30초마다 RES를 6번 눌러줌. 재출발 시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
+          if self.standstill_fault_reduce_timer // 3000 == 1:
+            if 3000 < self.standstill_fault_reduce_timer < 3007
+              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+              if self.standstill_fault_reduce_timer == 3006:
+                self.standstill_fault_reduce_timer = 108
       else:
         # run only first time when the car stopped
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
@@ -490,7 +493,8 @@ class CarController():
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0
-      self.standstill_fault_reduce_timer = 0
+    elif 0 < CS.out.vEgo < 1:
+     self.standstill_fault_reduce_timer = 0  
     elif run_speed_ctrl:
       is_sc_run = self.SC.update(CS, sm, self)
       if is_sc_run:
