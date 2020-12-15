@@ -127,6 +127,7 @@ class CarController():
     self.vRel2 = 0
     self.lead2_status = False
     self.cut_in_detection = 0
+    self.target_map_speed = 0
 
     self.cruise_gap = 0.0
     self.cruise_gap_prev = 0
@@ -197,6 +198,7 @@ class CarController():
     self.yRel2 = int(plan.yRel2) #EON Lead
     self.vRel2 = int(plan.vRel2 * 3.6 + 0.5) #EON Lead
     self.lead2_status = plan.status2
+    self.target_map_speed = plan.targetSpeed
 
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale

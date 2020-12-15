@@ -103,6 +103,7 @@ class SpdController():
         self.params = Params()
         self.cruise_set_mode = int(self.params.get('CruiseStatemodeSelInit'))
 
+        self.osm_spd_enable = False
 
     def reset(self):
         self.v_model = 0
@@ -289,13 +290,18 @@ class SpdController():
         delta = int(round(set_speed)) - int(CS.VSetDis)
         dec_step_cmd = 1
 
-
+        self.osm_spd_enable = Params().get("LimitSetSpeed", encoding='utf8') == "1"
         if self.long_curv_timer < long_wait_cmd:
             pass
         elif delta > 0:
-            set_speed = int(CS.VSetDis) + dec_step_cmd
-            btn_type = Buttons.RES_ACCEL
-            self.long_curv_timer = 0
+            if (int(round(CC.target_map_speed))+5) > int(CS.VSetDis) and self.osm_spd_enable:
+                set_speed = int(CS.VSetDis) + dec_step_cmd
+                btn_type = Buttons.RES_ACCEL
+                self.long_curv_timer = 0
+            else:
+                set_speed = int(CS.VSetDis) + dec_step_cmd
+                btn_type = Buttons.RES_ACCEL
+                self.long_curv_timer = 0
         elif delta < 0:
             set_speed = int(CS.VSetDis) - dec_step_cmd
             btn_type = Buttons.SET_DECEL
