@@ -208,7 +208,7 @@
         }
       }, 
       {
-        "speed": "80", 
+        "speed": "50", 
         "tags": {
           "highway": "unclassified"
         }
