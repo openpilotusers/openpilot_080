@@ -136,6 +136,8 @@ class CarController():
     self.cruise_gap_prev2 = 0
     self.cruise_gap_switch_timer2 = 0
     self.cruise_gap_switch_timer3 = 0
+    self.standstill_status = 0
+    self.standstill_status_timer = 0
 
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
@@ -429,32 +431,37 @@ class CarController():
       can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
 
     if CS.out.cruiseState.standstill:
+      self.standstill_status = 1
       if self.opkr_autoresumeoption == 1:
+        # run only first time when the car stopped
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
+          # get the lead distance from the Radar
           self.last_lead_distance = CS.lead_distance
           self.resume_cnt = 0
-          self.resume_wait_timer = 0
-        elif self.resume_wait_timer > 0:
-          self.resume_wait_timer -= 1
-        elif CS.lead_distance != self.last_lead_distance:
+        # when lead car starts moving, create 6 RES msgs
+        elif CS.lead_distance != self.last_lead_distance and (frame - self.last_resume_frame) > 5 and self.opkr_autoresume:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
           self.resume_cnt += 1
+          # interval after 6 msgs
           if self.resume_cnt > 5:
+            self.last_resume_frame = frame
             self.resume_cnt = 0
-            self.resume_wait_timer = int(0.25 / DT_CTRL)
-        elif self.cruise_gap_prev == 0 and run_speed_ctrl: 
+        elif self.cruise_gap_prev == 0 and self.opkr_autoresume: 
           self.cruise_gap_prev = CS.cruiseGapSet
           self.cruise_gap_set_init = 1
-        elif CS.cruiseGapSet != 1.0 and run_speed_ctrl:
+        elif CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
           self.cruise_gap_switch_timer += 1
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-        else:
+        # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 한번 눌러줌
+        elif self.standstill_fault_reduce_timer == 100 and self.opkr_autoresume:
+          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+        elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
-          if CS.out.cruiseState.standstill and self.standstill_fault_reduce_timer > 50:
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.NONE, clu11_speed))
-            self.standstill_fault_reduce_timer = 0
+           # 30초마다 RES를 임의로 눌러줌. 재출발시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
+          if self.standstill_fault_reduce_timer % 3000 == 0:
+            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
       else:
         # run only first time when the car stopped
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
@@ -462,30 +469,26 @@ class CarController():
           self.last_lead_distance = CS.lead_distance
           self.resume_cnt = 0
         # when lead car starts moving, create 6 RES msgs
-        elif CS.lead_distance != self.last_lead_distance and (frame - self.last_resume_frame) > 5:
+        elif CS.lead_distance != self.last_lead_distance and (frame - self.last_resume_frame) > 5 and self.opkr_autoresume:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
           self.resume_cnt += 1
           # interval after 6 msgs
           if self.resume_cnt > 5:
             self.last_resume_frame = frame
             self.resume_cnt = 0
-        elif self.cruise_gap_prev == 0: 
+        elif self.cruise_gap_prev == 0 and self.opkr_autoresume: 
           self.cruise_gap_prev = CS.cruiseGapSet
           self.cruise_gap_set_init = 1
-        elif CS.cruiseGapSet != 1.0:
+        elif CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
           self.cruise_gap_switch_timer += 1
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-        else:
-          self.standstill_fault_reduce_timer += 1
-          if CS.out.cruiseState.standstill and self.standstill_fault_reduce_timer > 50:
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.NONE, clu11_speed))
-            self.standstill_fault_reduce_timer = 0
 
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0
+      self.standstill_fault_reduce_timer = 0
     elif run_speed_ctrl:
       is_sc_run = self.SC.update(CS, sm, self)
       if is_sc_run:
@@ -493,12 +496,12 @@ class CarController():
         self.resume_cnt += 1
       else:
         self.resume_cnt = 0
-      if self.dRel > 17 and self.vRel < 5 and self.cruise_gap_prev != CS.cruiseGapSet and self.cruise_gap_set_init == 1:
+      if self.dRel > 17 and self.vRel < 5 and self.cruise_gap_prev != CS.cruiseGapSet and self.cruise_gap_set_init == 1 and self.opkr_autoresume:
         self.cruise_gap_switch_timer += 1
         if self.cruise_gap_switch_timer > 50:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
           self.cruise_gap_switch_timer = 0
-      elif self.cruise_gap_prev == CS.cruiseGapSet:
+      elif self.cruise_gap_prev == CS.cruiseGapSet and self.opkr_autoresume:
         self.cruise_gap_set_init = 0
         self.cruise_gap_prev = 0
       #if CS.out.vEgo > 8 and self.lead2_status and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
@@ -522,7 +525,14 @@ class CarController():
       #  self.cruise_gap_prev2 = 0
       #  self.cruise_gap_switch_timer2 = 0
       #  self.cruise_gap_switch_timer3 = 0
-
+    
+    if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.acc_active:
+      self.standstill_status_timer += 1
+      if self.standstill_status_timer > 200:
+        self.standstill_status = 1
+        self.standstill_status_timer = 0
+    if self.standstill_status == 1 and CS.out.vEgo > 1:
+      self.standstill_status = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
