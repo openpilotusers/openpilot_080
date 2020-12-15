@@ -459,6 +459,7 @@ class CarController():
         # 처음 standstill 진입 후 gap세팅 후 1초후에 RES를 6번 눌러줌. 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
         elif 100 < self.standstill_fault_reduce_timer < 107 and self.opkr_autoresume:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+          self.standstill_fault_reduce_timer += 1
         elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
            # 30초마다 RES를 6번 눌러줌. 재출발 시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
