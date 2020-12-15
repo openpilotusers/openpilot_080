@@ -463,7 +463,7 @@ class CarController():
           self.standstill_fault_reduce_timer += 1
            # 30초마다 RES를 6번 눌러줌. 재출발 시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
           if self.standstill_fault_reduce_timer // 3000 == 1:
-            if 3000 < self.standstill_fault_reduce_timer < 3007
+            if 3000 < self.standstill_fault_reduce_timer < 3007:
               can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
               if self.standstill_fault_reduce_timer == 3006:
                 self.standstill_fault_reduce_timer = 108
