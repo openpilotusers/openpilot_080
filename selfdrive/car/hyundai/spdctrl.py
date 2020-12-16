@@ -85,7 +85,7 @@ class Spdctrl(SpdController):
             lead_set_speed = int(round(CS.clu_Vanz)) + 5
             self.seq_step_debug = "운전자가속"
             lead_wait_cmd = 15
-        elif int(round(self.target_speed) < int(CS.VSetDis) and self.osm_enable and int(round(self.target_speed)) < int(round(self.cruise_set_speed_kph)):
+        elif int(round(self.target_speed)) < int(CS.VSetDis) and self.osm_enable and int(round(self.target_speed)) < int(round(self.cruise_set_speed_kph)):
             self.seq_step_debug = "맵기반감속"
             lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 50, -1)
         # 거리 유지 조건
