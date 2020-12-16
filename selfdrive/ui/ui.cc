@@ -259,6 +259,7 @@ void update_sockets(UIState *s) {
     scene.map_valid = sm["liveMapData"].getLiveMapData().getMapValid();
     scene.speedlimit = sm["liveMapData"].getLiveMapData().getSpeedLimit();
     scene.speedlimit_valid = sm["liveMapData"].getLiveMapData().getSpeedLimitValid();
+    scene.speedlimitahead = sm["liveMapData"].getLiveMapData().getSpeedLimitAhead();
     scene.speedlimitahead_valid = sm["liveMapData"].getLiveMapData().getSpeedLimitAheadValid();
     scene.speedlimitaheaddistance = sm["liveMapData"].getLiveMapData().getSpeedLimitAheadDistance();
   }

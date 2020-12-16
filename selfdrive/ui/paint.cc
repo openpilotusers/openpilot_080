@@ -476,6 +476,7 @@ static void ui_draw_debug(UIState *s)
     } else if (s->lateral_control == 2) {
       ui_print(s, ui_viz_rx, ui_viz_ry+550, "LaC:LQR");
     }
+    ui_print(s, ui_viz_rx, ui_viz_ry+600, "SL:%.1f", scene.speedlimitahead);
     nvgFontSize(s->vg, 45);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
     //ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
@@ -684,14 +685,32 @@ static void ui_draw_vision_event(UIState *s) {
   const int viz_event_w = 220;
   const int viz_event_x = s->scene.viz_rect.right() - (viz_event_w + bdr_s*2);
   const int viz_event_y = s->scene.viz_rect.y + (bdr_s*1.5);
-  if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < 300 && s->scene.controls_state.getEnabled() && s->limit_set_speed) {
+  //if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < 300 && s->scene.controls_state.getEnabled() && s->limit_set_speed) {
+  if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < 300 && s->scene.controls_state.getEnabled()) {
     const int img_turn_size = 160;
     const int img_turn_x = viz_event_x-(img_turn_size/4)+80;
     const int img_turn_y = viz_event_y+bdr_s-25;
     float img_turn_alpha = 1.0f;
     nvgBeginPath(s->vg);
-    NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y,
-      img_turn_size, img_turn_size, 0, s->img_speed, img_turn_alpha);
+    if (s->scene.speedlimitahead == 30) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_30, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 50) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_50, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 60) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_60, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 70) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_70, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 80) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_80, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 90) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_90, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 100) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_100, img_turn_alpha);
+    } else if (s->scene.speedlimitahead == 110) {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed_110, img_turn_alpha);
+    } else {
+      NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size, 0, s->img_speed, img_turn_alpha);
+    }
     nvgRect(s->vg, img_turn_x, img_turn_y, img_turn_size, img_turn_size);
     nvgFillPaint(s->vg, imgPaint);
     nvgFill(s->vg);
@@ -1409,6 +1428,22 @@ void ui_nvg_init(UIState *s) {
   s->img_map = nvgCreateImage(s->vg, "../assets/img_map.png", 1);
   assert(s->img_map != 0);
   s->img_speed = nvgCreateImage(s->vg, "../assets/img_trafficSign_speedahead.png", 1);
+  assert(s->img_speed_30 != 0);
+  s->img_speed_30 = nvgCreateImage(s->vg, "../assets/img_30_speedahead.png", 1);
+  assert(s->img_speed_50 != 0);
+  s->img_speed_50 = nvgCreateImage(s->vg, "../assets/img_50_speedahead.png", 1);
+  assert(s->img_speed_60 != 0);
+  s->img_speed_60 = nvgCreateImage(s->vg, "../assets/img_60_speedahead.png", 1);
+  assert(s->img_speed_70 != 0);
+  s->img_speed_70 = nvgCreateImage(s->vg, "../assets/img_70_speedahead.png", 1);
+  assert(s->img_speed_80 != 0);
+  s->img_speed_80 = nvgCreateImage(s->vg, "../assets/img_80_speedahead.png", 1);
+  assert(s->img_speed_90 != 0);
+  s->img_speed_90 = nvgCreateImage(s->vg, "../assets/img_90_speedahead.png", 1);
+  assert(s->img_speed_100 != 0);
+  s->img_speed_100 = nvgCreateImage(s->vg, "../assets/img_100_speedahead.png", 1);
+  assert(s->img_speed_110 != 0);
+  s->img_speed_110 = nvgCreateImage(s->vg, "../assets/img_110_speedahead.png", 1);
   assert(s->img_speed != 0);
   s->img_turn = nvgCreateImage(s->vg, "../assets/img_trafficSign_turn.png", 1);
   assert(s->img_turn != 0);

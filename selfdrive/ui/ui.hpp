@@ -109,6 +109,7 @@ typedef struct UIScene {
 
   float speedlimit;
   bool speedlimit_valid;
+  float speedlimitahead;
   float speedlimitaheaddistance;
   bool speedlimitahead_valid;
   bool map_valid;
@@ -253,6 +254,14 @@ typedef struct UIState {
   int img_network[6];
   int img_map;
   int img_speed;
+  int img_speed_30;
+  int img_speed_50;
+  int img_speed_60;
+  int img_speed_70;
+  int img_speed_80;
+  int img_speed_90;
+  int img_speed_100;
+  int img_speed_110;
   int img_car_left;
   int img_car_right;
 
