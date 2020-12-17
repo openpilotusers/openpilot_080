@@ -427,9 +427,10 @@ class CarController():
       if self.cruise_gap != CS.cruiseGapSet:
         if abs(self.cruise_gap - CS.cruiseGapSet) >= 1:
           self.gap_timer += 1
-          if self.gap_timer > 50:
+          if self.gap_timer > 100:
             self.cruise_gap = CS.cruiseGapSet
             self.gap_timer = 0
+      print('sgap={}, csgap={}, gt={}'.format(self.cruise_gap, CS.cruiseGapSet, self.gap_timer))
       if CS.lead_distance < 149:
         self.leadcar_status = "O"
       else:
