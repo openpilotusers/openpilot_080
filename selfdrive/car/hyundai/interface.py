@@ -242,7 +242,7 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.decelCruise
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-        if ret.vEgo > 8.3:
+        if ret.vEgo < 8.3:
           self.button_press_timer += 1
           if self.button_press_timer > 50:
             if self.CP.limitSpeedmanual == False:
