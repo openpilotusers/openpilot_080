@@ -156,6 +156,7 @@ class CarState(CarStateBase):
       ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR']
 
     self.cruiseGapSet = cp_scc.vl["SCC11"]['TauGapSet']
+    ret.limitSpeedmanual = self.CP.limitSpeedmanual
 
     self.sm.update(0)
     self.smartspeed = self.sm['liveMapData'].speedLimit

@@ -201,6 +201,7 @@ struct CarState {
 
   radarDistance @41 :Float32;
   standStill @42 :Bool;
+  limitSpeedmanual @43 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -449,6 +450,7 @@ struct CarParams {
   sccBus @53: Int8;
   spasEnabled @54: Bool;
   standStill @55: Bool;
+  limitSpeedmanual @56: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);

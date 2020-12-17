@@ -314,6 +314,7 @@ void update_sockets(UIState *s) {
     scene.tpmsPressureRr = data.getTpmsPressureRr();
     scene.radarDistance = data.getRadarDistance();
     scene.standStill = data.getStandStill();
+    scene.limitSpeedmanual = data.getLimitSpeedmanual();
   }
 
   if (sm.updated("sensorEvents")) {

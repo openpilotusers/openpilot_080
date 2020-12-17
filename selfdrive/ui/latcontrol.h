@@ -24,14 +24,14 @@ bool control_button_clicked2(int touch_x, int touch_y) {
   return false;
 }
 
-bool control_button_clicked3(int touch_x, int touch_y) {
-  if (touch_x >= 1265 && touch_x <= 1405) {
-    if (touch_y >= 905 && touch_y <= 1045) {
-      return true;
-    }
-  }
-  return false;
-}
+//bool control_button_clicked3(int touch_x, int touch_y) {
+//  if (touch_x >= 1265 && touch_x <= 1405) {
+//    if (touch_y >= 905 && touch_y <= 1045) {
+//      return true;
+//    }
+//  }
+//  return false;
+//}
 
 static void draw_control_buttons(UIState *s, int touch_x, int touch_y) {
   if (s->vision_connected){
@@ -122,15 +122,23 @@ bool latcontrol( UIState *s, int touch_x, int touch_y ) {
     }
     touched = true;
   }
-  if ((control_button_clicked3(touch_x,touch_y)) && (s->scene.uilayout_sidebarcollapsed == true)) {
-    if (s->limit_set_speed == false) {
-      s->limit_set_speed = true;
-      Params().write_db_value("LimitSetSpeed", "1", 1);
-    } else if (s->limit_set_speed == true) {
-      s->limit_set_speed = false;
-      Params().write_db_value("LimitSetSpeed", "0", 1);
-    }
-    touched = true;
+//  if ((control_button_clicked3(touch_x,touch_y)) && (s->scene.uilayout_sidebarcollapsed == true)) {
+//    if (s->limit_set_speed == false) {
+//      s->limit_set_speed = true;
+//      Params().write_db_value("LimitSetSpeed", "1", 1);
+//    } else if (s->limit_set_speed == true) {
+//      s->limit_set_speed = false;
+//      Params().write_db_value("LimitSetSpeed", "0", 1);
+//    }
+//    touched = true;
+//  }
+
+  if (scene.limitSpeedmanual == true) {
+    s->limit_set_speed = true;
+    Params().write_db_value("LimitSetSpeed", "1", 1);
+  } else if (scene.limitSpeedmanual == false) {
+    s->limit_set_speed = false;
+    Params().write_db_value("LimitSetSpeed", "0", 1);
   }
   
   return touched;

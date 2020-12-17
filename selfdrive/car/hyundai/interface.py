@@ -20,6 +20,7 @@ class CarInterface(CarInterfaceBase):
 
     self.blinker_status = 0
     self.blinker_timer = 0
+    self.button_press_timer = 0
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -189,6 +190,7 @@ class CarInterface(CarInterfaceBase):
     ret.startAccel = 0.0
 
     ret.standStill = False
+    ret.limitSpeedmanual = False
 
     # ignore CAN2 address if L-CAN on the same BUS
     ret.mdpsBus = 1 if 593 in fingerprint[1] and 1296 not in fingerprint[1] else 0
@@ -240,6 +242,15 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.decelCruise
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
+        if ret.vEgo > 8.3:
+          self.button_press_timer += 1
+          if self.button_press_timer > 50:
+            if self.CP.limitSpeedmanual == False:
+              self.CP.limitSpeedmanual = True
+            elif self.CP.limitSpeedmanual == True:
+              self.CP.limitSpeedmanual = False
+            self.button_press_timer = 0
+          print('howlongpressed={}'.format(self.button_press_timer))
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
       else:
