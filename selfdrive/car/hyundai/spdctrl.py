@@ -40,7 +40,7 @@ class Spdctrl(SpdController):
         vRelef = plan.vRel2 * 3.6 + 0.5 #EON Lead
         lead2_status = plan.status2
         self.target_speed_road = plan.targetSpeed + self.osm_spdlimit_offset
-        self.target_speed_camera = (plan.targetSpeedCamera + self.osm_spdlimit_offset)
+        self.target_speed_camera = plan.targetSpeedCamera + self.osm_spdlimit_offset
         
         if self.osm_enable:
             self.target_speed = self.target_speed_road
@@ -150,7 +150,7 @@ class Spdctrl(SpdController):
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 10, -10)
         elif self.cruise_set_speed_kph > int(round((CS.clu_Vanz))):  #이온설정속도가 차량속도보다 큰경우
             self.cut_in = False
-            if 10 > dRel > 3 and lead_objspd < 0 and 1 < int(CS.clu_Vanz) <= 7 and CS.VSetDis < 45 and int(round(self.target_speed)) > int(CS.VSetDis):
+            if 10 > dRel > 3 and lead_objspd <= 0 and 1 < int(CS.clu_Vanz) <= 7 and CS.VSetDis < 45 and int(round(self.target_speed)) > int(CS.VSetDis):
                 self.seq_step_debug = "출발속도조정"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 7, 5)
             elif 20 > dRel > 3 and lead_objspd > 5 and CS.clu_Vanz <= 25 and CS.VSetDis < 55 and int(round(self.target_speed)) > int(CS.VSetDis):

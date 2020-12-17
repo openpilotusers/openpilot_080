@@ -488,9 +488,6 @@ class CarController():
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
-    # 가변 크루즈를 위한 정차시 출발속도 조정, 45미만일경우
-    elif run_speed_ctrl and self.opkr_autoresume and int(CS.VSetDis) < 45 and self.standstill_status == 1 and self.vCruiseSet >= 45:
-      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
       self.last_lead_distance = 0
@@ -541,6 +538,8 @@ class CarController():
       self.standstill_fault_reduce_timer = 0
       self.v_set_dis_prev = 180
       self.last_resume_frame = frame
+      self.res_switch_timer = 0
+      self.resume_cnt = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
