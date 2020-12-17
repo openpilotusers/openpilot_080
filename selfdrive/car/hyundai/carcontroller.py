@@ -140,6 +140,7 @@ class CarController():
     self.cruise_gap_switch_timer3 = 0
     self.standstill_status = 0
     self.standstill_status_timer = 0
+    self.res_switch_timer = 0
 
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
@@ -445,44 +446,26 @@ class CarController():
         # when lead car starts moving, create 5 RES msgs
         # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
         elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance and (frame - self.last_resume_frame) > 5 and self.opkr_autoresume:
-          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-          self.resume_cnt += 1
-          self.standstill_fault_reduce_timer += 1
-          # interval after 5 msgs
-          if self.resume_cnt > 4:
-            self.last_resume_frame = frame
-            self.resume_cnt = 0
-        # 처음 standstill 진입 후 1초후에 RES or SET을 눌러줌. 상태메시지 바뀔때까지 최대 5회 누르며 오류로 주차브레이크 걸리는지 테스트 하기 위한 용도?
-        elif 100 < self.standstill_fault_reduce_timer < 106 and self.opkr_autoresume:
-          if self.v_set_dis_prev >= int(CS.VSetDis):
-            self.v_set_dis_prev = int(CS.VSetDis)
+          self.res_switch_timer += 1
+          if self.res_switch_timer > 9: # 신호를 너무 빨리 주지말고 0.1초마다 한번씩 주기
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-          elif self.v_set_dis_prev <= int(CS.VSetDis):
-            self.v_set_dis_prev = int(CS.VSetDis)
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.SET_DECEL, clu11_speed))
+            self.res_switch_timer = 0
+            self.resume_cnt += 1
+            # interval after 5 msgs
+            if self.resume_cnt > 4:
+              self.last_resume_frame = frame
+              self.resume_cnt = 0
           self.standstill_fault_reduce_timer += 1
-        elif 200 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
+        elif 150 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
           self.cruise_gap_prev = CS.cruiseGapSet
           self.cruise_gap_set_init = 1
-        elif 200 < self.standstill_fault_reduce_timer and CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
+        elif 150 < self.standstill_fault_reduce_timer and CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
           self.cruise_gap_switch_timer += 1
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
             self.cruise_gap_switch_timer = 0
         elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
-           # 30초마다 RES or SET을 최대5번 눌러줌. 재출발 시 오류방지를 위한 개인적인 해결책? 3.7m 이런얘기도 있는데, 콤마코드에서 빠진거보면 뭔가 다른게 있는듯 합니다.
-          if self.standstill_fault_reduce_timer // 3000 >= 1:
-            if 3000 < self.standstill_fault_reduce_timer < 3006 and self.v_set_dis_prev >= int(CS.VSetDis):
-              self.v_set_dis_prev = int(CS.VSetDis)
-              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-              if self.standstill_fault_reduce_timer >= 3005:
-                self.standstill_fault_reduce_timer = 107
-            elif 3000 < self.standstill_fault_reduce_timer < 3006 and self.v_set_dis_prev <= int(CS.VSetDis):
-              self.v_set_dis_prev = int(CS.VSetDis)
-              can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.SET_DECEL, clu11_speed))
-              if self.standstill_fault_reduce_timer >= 3005:
-                self.standstill_fault_reduce_timer = 107
       else:
         # run only first time when the car stopped
         if self.last_lead_distance == 0 or not self.opkr_autoresume:
@@ -557,6 +540,7 @@ class CarController():
       self.standstill_status = 0
       self.standstill_fault_reduce_timer = 0
       self.v_set_dis_prev = 180
+      self.last_resume_frame = frame
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
