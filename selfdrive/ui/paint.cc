@@ -476,7 +476,7 @@ static void ui_draw_debug(UIState *s)
     } else if (s->lateral_control == 2) {
       ui_print(s, ui_viz_rx, ui_viz_ry+550, "LaC:LQR");
     }
-    ui_print(s, ui_viz_rx, ui_viz_ry+600, "SL:%.1f", scene.speedlimitahead);
+    ui_print(s, ui_viz_rx, ui_viz_ry+600, "SL:%.1f", scene.speedlimitahead*3.6);
     nvgFontSize(s->vg, 45);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
     //ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
@@ -692,14 +692,14 @@ static void ui_draw_vision_event(UIState *s) {
     const int img_turn_y = viz_event_y+bdr_s-25;
     float img_turn_alpha = 1.0f;
     int speed_img;
-    if (s->scene.speedlimitahead == 30) {speed_img = s->img_speed_30;}
-    else if (s->scene.speedlimitahead == 50) {speed_img = s->img_speed_50;}
-    else if (s->scene.speedlimitahead == 60) {speed_img = s->img_speed_60;}
-    else if (s->scene.speedlimitahead == 70) {speed_img = s->img_speed_70;}
-    else if (s->scene.speedlimitahead == 80) {speed_img = s->img_speed_80;}
-    else if (s->scene.speedlimitahead == 90) {speed_img = s->img_speed_90;}
-    else if (s->scene.speedlimitahead == 100) {speed_img = s->img_speed_100;}
-    else if (s->scene.speedlimitahead == 110) {speed_img = s->img_speed_110;}
+    if (29 < s->scene.speedlimitahead*3.6 < 31) {speed_img = s->img_speed_30;}
+    else if (49 < s->scene.speedlimitahead*3.6 < 51) {speed_img = s->img_speed_50;}
+    else if (59 < s->scene.speedlimitahead*3.6 < 61) {speed_img = s->img_speed_60;}
+    else if (69 < s->scene.speedlimitahead*3.6 < 71) {speed_img = s->img_speed_70;}
+    else if (79 < s->scene.speedlimitahead*3.6 < 81) {speed_img = s->img_speed_80;}
+    else if (89 < s->scene.speedlimitahead*3.6 < 91) {speed_img = s->img_speed_90;}
+    else if (99 < s->scene.speedlimitahead*3.6 < 101) {speed_img = s->img_speed_100;}
+    else if (109 < s->scene.speedlimitahead*3.6 < 111) {speed_img = s->img_speed_110;}
     else {speed_img = s->img_speed;}
     nvgBeginPath(s->vg);
     NVGpaint imgPaint = nvgImagePattern(s->vg, img_turn_x, img_turn_y,

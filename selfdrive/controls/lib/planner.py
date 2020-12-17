@@ -225,14 +225,16 @@ class Planner():
         time_to_turn = max(1.0, sm['liveMapData'].distToTurn / max((v_ego + v_curvature_map)/2, 1.))
         required_decel = min(0, (v_curvature_map - v_ego) / time_to_turn)
         accel_limits[0] = max(accel_limits[0], required_decel)
-      if v_speedlimit_ahead < v_speedlimit and v_ego > v_speedlimit_ahead and sm['liveMapData'].speedLimitAheadDistance > 1.0 and not following:
-        required_decel = min(0, (v_speedlimit_ahead*v_speedlimit_ahead - v_ego*v_ego)/(sm['liveMapData'].speedLimitAheadDistance*2))
-        required_decel = max(required_decel, -3.0)
-        decel_for_turn = True
-        accel_limits[0] = required_decel
-        accel_limits[1] = required_decel
-        self.a_acc_start = required_decel
-        v_speedlimit_ahead = v_ego
+      #if v_speedlimit_ahead < v_speedlimit and v_ego > v_speedlimit_ahead and sm['liveMapData'].speedLimitAheadDistance > 1.0 and not following:
+      #  required_decel = min(0, (v_speedlimit_ahead*v_speedlimit_ahead - v_ego*v_ego)/(sm['liveMapData'].speedLimitAheadDistance*2))
+      #  required_decel = max(required_decel, -3.0)
+      #  decel_for_turn = True
+      #  accel_limits[0] = required_decel
+      #  accel_limits[1] = required_decel
+      #  self.a_acc_start = required_decel
+      #  v_speedlimit_ahead = v_ego
+      if v_speedlimit_ahead and v_ego > v_speedlimit_ahead and sm['liveMapData'].speedLimitAheadDistance > 1.0:
+        v_speedlimit_ahead = sm['liveMapData'].speedLimitAhead
 
       v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit, v_speedlimit_ahead])
 
