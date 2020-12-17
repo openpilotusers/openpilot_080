@@ -133,10 +133,10 @@ bool latcontrol( UIState *s, int touch_x, int touch_y ) {
 //    touched = true;
 //  }
 
-  if (scene.limitSpeedmanual == true) {
+  if (s->scene.limitSpeedmanual == true) {
     s->limit_set_speed = true;
     Params().write_db_value("LimitSetSpeed", "1", 1);
-  } else if (scene.limitSpeedmanual == false) {
+  } else if (s->scene.limitSpeedmanual == false) {
     s->limit_set_speed = false;
     Params().write_db_value("LimitSetSpeed", "0", 1);
   }
