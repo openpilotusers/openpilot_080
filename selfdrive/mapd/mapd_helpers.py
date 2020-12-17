@@ -391,6 +391,7 @@ class Way:
             min_dist = min(np.linalg.norm(way_pts[1, :]),np.linalg.norm(way_pts[0, :]),np.linalg.norm(way_pts[-1, :]))
             speed_ahead_dist = min_dist
             break
+      print('tags={}'.format(way.way.nodes.tags))
       if 'maxspeed' in way.way.nodes.tags and way.way.nodes.tags['highway']=='speed_camera':
         spd = parse_speed_tags(way.way.nodes.tags)
         #print "spd found"
@@ -406,7 +407,6 @@ class Way:
           speed_ahead_dist = min_dist
           #print "slower speed found"
           #print min_dist
-        print('speed_ahead={}, speed_ahead_dist={}'.format(speed_ahead, speed_ahead_dist))
           break
       way_pts = way.points_in_car_frame(lat, lon, heading, False)
       #print(way_pts)
