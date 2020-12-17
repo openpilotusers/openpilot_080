@@ -853,6 +853,7 @@ struct Plan {
   vRel2 @37 :Float32;
   status2 @38 :Bool;
   targetSpeed @39 :Float32;
+  targetSpeedCamera @40 :Float32;
 
   struct GpsTrajectory {
     x @0 :List(Float32);

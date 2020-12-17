@@ -328,6 +328,7 @@ class Planner():
     plan_send.plan.vRel2 = lead_2.vRel
     plan_send.plan.status2 = lead_2.status
     plan_send.plan.targetSpeed = v_cruise_setpoint * CV.MS_TO_KPH
+    plan_send.plan.targetSpeedCamera = v_speedlimit_ahead * CV.MS_TO_KPH
 
     pm.send('plan', plan_send)
 

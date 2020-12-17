@@ -661,6 +661,7 @@ def main():
     ("OpkrAutoResumeOption", "0"),
     ("OpkrAngleOffsetSelect", "0"),
     ("OpkrSpeedLimitOffset", "0"),
+    ("LimitSetSpeedCamera", "0"),
   ]
 
   # set unset params

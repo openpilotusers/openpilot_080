@@ -24,9 +24,12 @@ class Spdctrl(SpdController):
         self.osm_enable = False
         self.osm_spdlimit_offset = 0
         self.target_speed = 0
+        self.target_speed_road = 0
+        self.target_speed_camera = 0
 
     def update_lead(self, sm, CS, dRel, yRel, vRel):
         self.osm_enable = Params().get("LimitSetSpeed", encoding='utf8') == "1"
+        self.osm_enable_camera = Params().get("LimitSetSpeedCamera", encoding='utf8') == "1"
         self.osm_spdlimit_offset = int(Params().get("OpkrSpeedLimitOffset", encoding='utf8'))
         plan = sm['plan']
         dRele = plan.dRel1 #EON Lead
@@ -36,7 +39,13 @@ class Spdctrl(SpdController):
         yRelef = plan.yRel2 #EON Lead
         vRelef = plan.vRel2 * 3.6 + 0.5 #EON Lead
         lead2_status = plan.status2
-        self.target_speed = plan.targetSpeed + self.osm_spdlimit_offset
+        self.target_speed_road = plan.targetSpeed + self.osm_spdlimit_offset
+        self.target_speed_camera = plan.targetSpeedCamera + self.osm_spdlimit_offset
+        
+        if self.osm_enable:
+            self.target_speed = self.target_speed_road
+        elif self.osm_enable_camera:
+            self.target_speed = self.target_speed_camera
         lead_set_speed = int(round(self.cruise_set_speed_kph))
         lead_wait_cmd = 300
 

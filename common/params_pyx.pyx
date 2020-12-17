@@ -127,6 +127,7 @@ keys = {
   b"OpkrAutoResumeOption": [TxType.PERSISTENT],
   b"OpkrAngleOffsetSelect": [TxType.PERSISTENT],
   b"OpkrSpeedLimitOffset": [TxType.PERSISTENT],
+  b"LimitSetSpeedCamera": [TxType.PERSISTENT],
 }
 
 def ensure_bytes(v):
