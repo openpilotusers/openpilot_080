@@ -44,11 +44,11 @@ class Spdctrl(SpdController):
         
         if self.osm_enable:
             self.target_speed = self.target_speed_road
-        elif self.osm_enable_camera:
-            self.target_speed = self.target_speed_camera
         elif self.target_speed_camera < 6:
             self.osm_enable_camera = False
-            self.target_speed_camera = 0
+            self.target_speed = -self.osm_spdlimit_offset
+        elif self.osm_enable_camera:
+            self.target_speed = self.target_speed_camera
 
         lead_set_speed = int(round(self.cruise_set_speed_kph))
         lead_wait_cmd = 300
