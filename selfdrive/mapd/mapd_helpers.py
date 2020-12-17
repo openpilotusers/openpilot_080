@@ -415,8 +415,8 @@ class Way:
         loop_must_break = False
         for n in way.way.nodes:
           if 'highway' in n.tags and n.tags['highway']=='speed_camera':
-            speed_ahead = n.tags['maxspeed'] / 3.6
-            speed_ahead_dist = 300
+            speed_ahead = int(n.tags['maxspeed']) / 3.6
+            speed_ahead_dist = max(0. , way_pts[count, 0])
             loop_must_break = True
             break
           count += 1
