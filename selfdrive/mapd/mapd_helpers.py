@@ -368,7 +368,6 @@ class Way:
       except KeyError:
         pass
       angle=heading - math.atan2(way.way.nodes[0].lon-way.way.nodes[-1].lon,way.way.nodes[0].lat-way.way.nodes[-1].lat)*180/3.14159265358979 - 180
-      print('angle={}'.format(angle))
       if angle < -180:
         angle = angle + 360
       if angle > 180:
@@ -392,13 +391,13 @@ class Way:
             min_dist = min(np.linalg.norm(way_pts[1, :]),np.linalg.norm(way_pts[0, :]),np.linalg.norm(way_pts[-1, :]))
             speed_ahead_dist = min_dist
             break
-      if 'maxspeed' in way.way.tags and way.way.tags['highway']=='speed_camera':
-        spd = parse_speed_tags(way.way.tags)
+      if 'maxspeed' in way.way.nodes.tags and way.way.nodes.tags['highway']=='speed_camera':
+        spd = parse_speed_tags(way.way.nodes.tags)
         #print "spd found"
         #print spd
         if not spd:
           location_info = self.query_results[4]
-          spd = geocode_maxspeed(way.way.tags, location_info)
+          spd = geocode_maxspeed(way.way.nodes.tags, location_info)
           #print "spd is actually"
           #print spd
         if spd is not None:
@@ -407,7 +406,7 @@ class Way:
           speed_ahead_dist = min_dist
           #print "slower speed found"
           #print min_dist
-          
+        print('speed_ahead={}, speed_ahead_dist={}'.format(speed_ahead, speed_ahead_dist))
           break
       way_pts = way.points_in_car_frame(lat, lon, heading, False)
       #print(way_pts)
