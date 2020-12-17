@@ -40,12 +40,15 @@ class Spdctrl(SpdController):
         vRelef = plan.vRel2 * 3.6 + 0.5 #EON Lead
         lead2_status = plan.status2
         self.target_speed_road = plan.targetSpeed + self.osm_spdlimit_offset
-        self.target_speed_camera = plan.targetSpeedCamera + self.osm_spdlimit_offset
+        self.target_speed_camera = (plan.targetSpeedCamera + self.osm_spdlimit_offset) - 5
         
         if self.osm_enable:
             self.target_speed = self.target_speed_road
-        elif self.osm_enable_camera:
+        elif self.osm_enable_camera > 5:
             self.target_speed = self.target_speed_camera
+        elif self.osm_enable_camera <= 5:
+            self.osm_enable_camera = False
+
         lead_set_speed = int(round(self.cruise_set_speed_kph))
         lead_wait_cmd = 300
 
