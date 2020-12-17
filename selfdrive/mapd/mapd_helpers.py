@@ -415,8 +415,8 @@ class Way:
         loop_must_break = False
         for n in way.way.nodes:
           if 'highway' in n.tags and (n.tags['highway']=='speed_camera'):
-            speed_ahead = n.tags['maxspeed']
-            speed_ahead_dist = max(0. , way_pts[count, 0] - 3.0)
+            speed_ahead = n.tags['maxspeed'] / 3.6
+            speed_ahead_dist = max(0. , way_pts[count, 0])
           if 'highway' in n.tags and (n.tags['highway']=='stop' or n.tags['highway']=='give_way' or n.tags['highway']=='mini_roundabout' or (n.tags['highway']=='traffic_signals' and traffic_lights)) and way_pts[count,0] > 0:
             if traffic_status == 'DEAD':
               pass
