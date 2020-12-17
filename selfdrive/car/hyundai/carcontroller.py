@@ -141,6 +141,7 @@ class CarController():
     self.standstill_status = 0
     self.standstill_status_timer = 0
     self.res_switch_timer = 0
+    self.gap_timer = 0
 
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
@@ -424,7 +425,11 @@ class CarController():
       else:
         self.lkas_switch = "-"
       if self.cruise_gap != CS.cruiseGapSet:
-        self.cruise_gap = CS.cruiseGapSet
+        if abs(self.cruise_gap - CS.cruiseGapSet) >= 1:
+          self.gap_timer += 1
+          if self.gap_timer > 50:
+            self.cruise_gap = CS.cruiseGapSet
+            self.gap_timer = 0
       if CS.lead_distance < 149:
         self.leadcar_status = "O"
       else:

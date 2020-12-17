@@ -287,6 +287,9 @@ class CarInterface(CarInterfaceBase):
     elif self.CC.mode_change_timer and self.CS.out.cruiseState.modeSel == 3:
       events.add(EventName.modeChangeOneway)
 
+    if self.CC.gap_timer >= 50:
+      self.button_press_timer = 0
+
   # handle button presses
     for b in ret.buttonEvents:
       # do disable on button down
