@@ -301,9 +301,9 @@ class CarInterface(CarInterfaceBase):
         if EventName.pcmDisable in events.events:
           events.events.remove(EventName.pcmDisable)
       elif self.CC.accActive:
-        if b.type == ButtonType.gapAdjustCruise and not b.pressed:
+        if b.type == ButtonType.gapAdjustCruise:
           self.button_press_timer += 1
-          if self.button_press_timer >= 2:
+          if self.button_press_timer >= 50:
             if self.CP.limitSpeedmanual == False:
               self.CP.limitSpeedmanual = True
             elif self.CP.limitSpeedmanual == True:
