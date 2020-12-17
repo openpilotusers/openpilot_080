@@ -24,14 +24,23 @@ bool control_button_clicked2(int touch_x, int touch_y) {
   return false;
 }
 
-//bool control_button_clicked3(int touch_x, int touch_y) {
-//  if (touch_x >= 1265 && touch_x <= 1405) {
-//    if (touch_y >= 905 && touch_y <= 1045) {
-//      return true;
-//    }
-//  }
-//  return false;
-//}
+bool control_button_clicked3(int touch_x, int touch_y) {
+  if (touch_x >= 1265 && touch_x <= 1405) {
+    if (touch_y >= 905 && touch_y <= 1045) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool control_button_clicked4(int touch_x, int touch_y) {
+  if (touch_x >= 1105 && touch_x <= 1245) {
+    if (touch_y >= 905 && touch_y <= 1045) {
+      return true;
+    }
+  }
+  return false;
+}
 
 static void draw_control_buttons(UIState *s, int touch_x, int touch_y) {
   if (s->vision_connected){
@@ -95,6 +104,33 @@ static void draw_control_button3(UIState *s, int touch_x, int touch_y) {
   }
 }
 
+static void draw_control_button4(UIState *s, int touch_x, int touch_y) {
+  if (s->vision_connected){
+    int btn_w = 140;
+    int btn_h = 140;
+    int btn_x4 = 1920 - btn_w - 675;
+    int btn_y = 1080 - btn_h - 35;
+    int btn_xc4 = btn_x4 + (btn_w/2);
+    int btn_yc = btn_y + (btn_h/2);
+    nvgBeginPath(s->vg);
+    nvgRoundedRect(s->vg, btn_x4, btn_y, btn_w, btn_h, 100);
+    if (s->limit_set_speed_camera == 1) {
+      nvgStrokeColor(s->vg, nvgRGBA(230,170,3,255));
+      nvgStrokeWidth(s->vg, 6);
+      nvgStroke(s->vg);
+      nvgFillColor(s->vg, nvgRGBA(255,175,3,80));
+      nvgFill(s->vg);
+    } else {
+      nvgStrokeColor(s->vg, nvgRGBA(255,255,255,80));
+      nvgStrokeWidth(s->vg, 6);
+      nvgStroke(s->vg);
+    }
+    nvgFontSize(s->vg, 45);
+    nvgFillColor(s->vg, nvgRGBA(255,255,255,200));
+    nvgText(s->vg,btn_xc4,btn_yc,"CAM",NULL);
+  }
+}
+
 bool latcontrol( UIState *s, int touch_x, int touch_y ) {
 
   bool touched = false;
@@ -122,16 +158,29 @@ bool latcontrol( UIState *s, int touch_x, int touch_y ) {
     }
     touched = true;
   }
-//  if ((control_button_clicked3(touch_x,touch_y)) && (s->scene.uilayout_sidebarcollapsed == true)) {
-//    if (s->limit_set_speed == false) {
-//      s->limit_set_speed = true;
-//      Params().write_db_value("LimitSetSpeed", "1", 1);
-//    } else if (s->limit_set_speed == true) {
-//      s->limit_set_speed = false;
-//      Params().write_db_value("LimitSetSpeed", "0", 1);
-//    }
-//    touched = true;
-//  }
+  if ((control_button_clicked3(touch_x,touch_y)) && (s->scene.uilayout_sidebarcollapsed == true)) {
+    if (s->limit_set_speed == false) {
+      s->limit_set_speed = true;
+      s->scene.limitSpeedmanual = true;
+      Params().write_db_value("LimitSetSpeed", "1", 1);
+    } else if (s->limit_set_speed == true) {
+      s->limit_set_speed = false;
+      s->scene.limitSpeedmanual = false;
+      Params().write_db_value("LimitSetSpeed", "0", 1);
+    }
+    touched = true;
+  }
+
+  if ((control_button_clicked4(touch_x,touch_y)) && (s->scene.uilayout_sidebarcollapsed == true)) {
+    if (s->limit_set_speed_camera == false) {
+      s->limit_set_speed_camera = true;
+      Params().write_db_value("LimitSetSpeedCamera", "1", 1);
+    } else if (s->limit_set_speed_camera == true) {
+      s->limit_set_speed_camera = false;
+      Params().write_db_value("LimitSetSpeedCamera", "0", 1);
+    }
+    touched = true;
+  }
 
   if (s->scene.limitSpeedmanual == true) {
     s->limit_set_speed = true;
