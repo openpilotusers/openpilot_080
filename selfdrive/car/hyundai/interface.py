@@ -303,13 +303,12 @@ class CarInterface(CarInterfaceBase):
       elif self.CC.accActive:
         if b.type == ButtonType.gapAdjustCruise and not b.pressed:
           self.button_press_timer += 1
-          if self.button_press_timer > 50:
+          if self.button_press_timer >= 2:
             if self.CP.limitSpeedmanual == False:
               self.CP.limitSpeedmanual = True
             elif self.CP.limitSpeedmanual == True:
               self.CP.limitSpeedmanual = False
             self.button_press_timer = 0
-          print('howlongpressed={}'.format(self.button_press_timer))
       elif not self.CC.longcontrol and ret.cruiseState.enabled:
         # do enable on decel button only
         if b.type == ButtonType.decelCruise and not b.pressed:
