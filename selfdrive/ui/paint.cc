@@ -685,8 +685,12 @@ static void ui_draw_vision_event(UIState *s) {
   const int viz_event_w = 220;
   const int viz_event_x = s->scene.viz_rect.right() - (viz_event_w + bdr_s*2);
   const int viz_event_y = s->scene.viz_rect.y + (bdr_s*1.5);
+  int tspeed;
+  if ((s->scene.controls_state.getVEgo()*3.6) <= 50) {tspeed = s->scene.controls_state.getVEgo()*3.6*3;}
+  else if ((s->scene.controls_state.getVEgo()*3.6) <= 70) {tspeed = s->scene.controls_state.getVEgo()*3.6*4;}
+  else if ((s->scene.controls_state.getVEgo()*3.6) > 70) {tspeed = s->scene.controls_state.getVEgo()*3.6*5;}
   //if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < 300 && s->scene.controls_state.getEnabled() && s->limit_set_speed) {
-  if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < (s->scene.controls_state.getVEgo()*3.6*4) && s->scene.controls_state.getEnabled()) {
+  if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < tspeed && s->scene.controls_state.getEnabled()) {
     const int img_turn_size = 160;
     const int img_turn_x = viz_event_x-(img_turn_size/4)+80;
     const int img_turn_y = viz_event_y+bdr_s-25;
