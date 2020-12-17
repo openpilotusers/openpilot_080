@@ -81,11 +81,9 @@ def parse_speed_unit(max_speed):
 def parse_speed_tags(tags):
   """Parses tags on a way to find the maxspeed string"""
   max_speed = None
-  max_speed_camera = None
 
   if 'maxspeed' in tags:
     max_speed = tags['maxspeed']
-    max_speed_camera = tags['maxspeed_camera']
 
   if 'maxspeed:conditional' in tags:
     try:
@@ -394,7 +392,7 @@ class Way:
             min_dist = min(np.linalg.norm(way_pts[1, :]),np.linalg.norm(way_pts[0, :]),np.linalg.norm(way_pts[-1, :]))
             speed_ahead_dist = min_dist
             break
-      if 'maxspeed:camera' in way.way.tags:
+      if 'maxspeed' in way.way.tags and way.way.tags['highway']=='speed_camera':
         spd = parse_speed_tags(way.way.tags)
         #print "spd found"
         #print spd
@@ -403,7 +401,7 @@ class Way:
           spd = geocode_maxspeed(way.way.tags, location_info)
           #print "spd is actually"
           #print spd
-        if spd is not None and spd < current_speed_limit:
+        if spd is not None:
           speed_ahead = spd
           min_dist = min(np.linalg.norm(way_pts[1, :]),np.linalg.norm(way_pts[0, :]),np.linalg.norm(way_pts[-1, :]))
           speed_ahead_dist = min_dist
