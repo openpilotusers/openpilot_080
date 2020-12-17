@@ -160,7 +160,7 @@ class Planner():
     speed_ahead_distance = default_brake_distance
     v_speedlimit = NO_CURVATURE_SPEED
     v_curvature_map = NO_CURVATURE_SPEED
-    v_speedlimit_ahead = NO_CURVATURE_SPEED
+    v_speedlimit_ahead = 0
     now = datetime.now()
     try:
       if sm['liveMapData'].speedLimitValid and osm and self.osm and (sm['liveMapData'].lastGps.timestamp -time.mktime(now.timetuple()) * 1000) < 10000 and (smart_speed or smart_speed_max_vego > v_ego):
@@ -188,12 +188,6 @@ class Planner():
           speed_limit_ahead = sm['liveMapData'].speedLimitAhead + (speed_limit - sm['liveMapData'].speedLimitAhead)*(sm['liveMapData'].speedLimitAheadDistance - distanceatlowlimit)/(speed_ahead_distance - distanceatlowlimit)
         else:
           speed_limit_ahead = sm['liveMapData'].speedLimitAhead
-        if speed_limit_ahead is not None:
-          v_speedlimit_ahead = speed_limit_ahead
-          if v_ego > offset_limit:
-            v_speedlimit_ahead = v_speedlimit_ahead * (1. + self.offset/100.0)
-          if v_speedlimit_ahead > fixed_offset:
-            v_speedlimit_ahead = v_speedlimit_ahead + fixed_offset
       if sm['liveMapData'].curvatureValid and sm['liveMapData'].distToTurn < speed_ahead_distance and osm and self.osm and (sm['liveMapData'].lastGps.timestamp -time.mktime(now.timetuple()) * 1000) < 10000:
         curvature = abs(sm['liveMapData'].curvature)
         radius = 1/max(1e-4, curvature) * curvature_factor
@@ -233,7 +227,7 @@ class Planner():
       #  accel_limits[1] = required_decel
       #  self.a_acc_start = required_decel
       #  v_speedlimit_ahead = v_ego
-      if v_speedlimit_ahead and v_ego > v_speedlimit_ahead and 1 < sm['liveMapData'].speedLimitAheadDistance < v_ego*3.6*4:
+      if sm['liveMapData'].speedLimitAhead:
         v_speedlimit_ahead = sm['liveMapData'].speedLimitAhead
 
       #v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit, v_speedlimit_ahead])
