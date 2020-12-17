@@ -377,7 +377,7 @@ class Way:
         if 'maxspeed:backward' in way.way.tags:
           spd = way.way.tags['maxspeed:backward']
           spd = parse_speed_unit(spd)
-          if spd is not None and spd < current_speed_limit:
+          if spd is not None:
             speed_ahead = spd
             min_dist = min(np.linalg.norm(way_pts[1, :]),np.linalg.norm(way_pts[0, :]),np.linalg.norm(way_pts[-1, :]))
             speed_ahead_dist = min_dist
@@ -386,19 +386,18 @@ class Way:
         if 'maxspeed:forward' in way.way.tags:
           spd = way.way.tags['maxspeed:forward']
           spd = parse_speed_unit(spd)
-          if spd is not None and spd < current_speed_limit:
+          if spd is not None:
             speed_ahead = spd
             min_dist = min(np.linalg.norm(way_pts[1, :]),np.linalg.norm(way_pts[0, :]),np.linalg.norm(way_pts[-1, :]))
             speed_ahead_dist = min_dist
             break
-      print('tags={}'.format(way.way.nodes.tags))
-      if 'maxspeed' in way.way.nodes.tags and way.way.nodes.tags['highway']=='speed_camera':
-        spd = parse_speed_tags(way.way.nodes.tags)
+      if 'maxspeed:none' in way.way.tags:
+        spd = parse_speed_tags(way.way.tags)
         #print "spd found"
         #print spd
         if not spd:
           location_info = self.query_results[4]
-          spd = geocode_maxspeed(way.way.nodes.tags, location_info)
+          spd = geocode_maxspeed(way.way.tags, location_info)
           #print "spd is actually"
           #print spd
         if spd is not None:
@@ -415,6 +414,9 @@ class Way:
         count = 0
         loop_must_break = False
         for n in way.way.nodes:
+          if 'highway' in n.tags and (n.tags['highway']=='speed_camera':
+            speed_ahead = n.tags['maxspeed']
+            speed_ahead_dist = max(0. , way_pts[count, 0] - 3.0)
           if 'highway' in n.tags and (n.tags['highway']=='stop' or n.tags['highway']=='give_way' or n.tags['highway']=='mini_roundabout' or (n.tags['highway']=='traffic_signals' and traffic_lights)) and way_pts[count,0] > 0:
             if traffic_status == 'DEAD':
               pass
