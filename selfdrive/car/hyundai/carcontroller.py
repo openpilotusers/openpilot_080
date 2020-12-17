@@ -145,6 +145,7 @@ class CarController():
     self.lkas_button_on = True
     self.longcontrol = CP.openpilotLongitudinalControl
     self.scc_live = not CP.radarOffCan
+    self.accActive = False
 
     self.angle_differ_range = [0, 45]
     self.steerMax_range = [int(self.params.get('SteerMaxBaseAdj')), SteerLimitParams.STEER_MAX]
@@ -201,6 +202,8 @@ class CarController():
     self.vRel2 = int(plan.vRel2 * 3.6 + 0.5) #EON Lead
     self.lead2_status = plan.status2
     self.target_map_speed = plan.targetSpeed
+    
+    self.accActive = CS.acc_active
 
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale

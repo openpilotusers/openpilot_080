@@ -242,15 +242,6 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.decelCruise
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-        if ret.vEgo < 8.3:
-          self.button_press_timer += 1
-          if self.button_press_timer > 50:
-            if self.CP.limitSpeedmanual == False:
-              self.CP.limitSpeedmanual = True
-            elif self.CP.limitSpeedmanual == True:
-              self.CP.limitSpeedmanual = False
-            self.button_press_timer = 0
-          print('howlongpressed={}'.format(self.button_press_timer))
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
       else:
@@ -309,6 +300,16 @@ class CarInterface(CarInterfaceBase):
           events.events.remove(EventName.wrongCarMode)
         if EventName.pcmDisable in events.events:
           events.events.remove(EventName.pcmDisable)
+      elif self.CC.accActive:
+        if b.type == ButtonType.gapAdjustCruise and not b.pressed:
+          self.button_press_timer += 1
+          if self.button_press_timer > 50:
+            if self.CP.limitSpeedmanual == False:
+              self.CP.limitSpeedmanual = True
+            elif self.CP.limitSpeedmanual == True:
+              self.CP.limitSpeedmanual = False
+            self.button_press_timer = 0
+          print('howlongpressed={}'.format(self.button_press_timer))
       elif not self.CC.longcontrol and ret.cruiseState.enabled:
         # do enable on decel button only
         if b.type == ButtonType.decelCruise and not b.pressed:
