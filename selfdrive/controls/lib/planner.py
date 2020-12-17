@@ -236,7 +236,8 @@ class Planner():
       if v_speedlimit_ahead and v_ego > v_speedlimit_ahead and 1 < sm['liveMapData'].speedLimitAheadDistance < v_ego*3.6*4:
         v_speedlimit_ahead = sm['liveMapData'].speedLimitAhead
 
-      v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit, v_speedlimit_ahead])
+      #v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit, v_speedlimit_ahead])
+      v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit])
 
       self.v_cruise, self.a_cruise = speed_smoother(self.v_acc_start, self.a_acc_start,
                                                     v_cruise_setpoint,
