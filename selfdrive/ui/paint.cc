@@ -476,7 +476,7 @@ static void ui_draw_debug(UIState *s)
     } else if (s->lateral_control == 2) {
       ui_print(s, ui_viz_rx, ui_viz_ry+550, "LaC:LQR");
     }
-    ui_print(s, ui_viz_rx, ui_viz_ry+600, "SL:%.1f", scene.speedlimitahead*3.6);
+    //ui_print(s, ui_viz_rx, ui_viz_ry+600, "SL:%.1f", scene.speedlimitahead*3.6);
     nvgFontSize(s->vg, 45);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
     //ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
@@ -686,7 +686,7 @@ static void ui_draw_vision_event(UIState *s) {
   const int viz_event_x = s->scene.viz_rect.right() - (viz_event_w + bdr_s*2);
   const int viz_event_y = s->scene.viz_rect.y + (bdr_s*1.5);
   //if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < 300 && s->scene.controls_state.getEnabled() && s->limit_set_speed) {
-  if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < 300 && s->scene.controls_state.getEnabled()) {
+  if (s->scene.speedlimitahead_valid && s->scene.speedlimitaheaddistance < (s->scene.controls_state.getVEgo()*3.6*4) && s->scene.controls_state.getEnabled()) {
     const int img_turn_size = 160;
     const int img_turn_x = viz_event_x-(img_turn_size/4)+80;
     const int img_turn_y = viz_event_y+bdr_s-25;

@@ -233,7 +233,7 @@ class Planner():
       #  accel_limits[1] = required_decel
       #  self.a_acc_start = required_decel
       #  v_speedlimit_ahead = v_ego
-      if v_speedlimit_ahead and v_ego > v_speedlimit_ahead and sm['liveMapData'].speedLimitAheadDistance > 1.0:
+      if v_speedlimit_ahead and v_ego > v_speedlimit_ahead and 1 < sm['liveMapData'].speedLimitAheadDistance < v_ego*3.6*4:
         v_speedlimit_ahead = sm['liveMapData'].speedLimitAhead
 
       v_cruise_setpoint = min([v_cruise_setpoint, v_curvature_map, v_speedlimit, v_speedlimit_ahead])
