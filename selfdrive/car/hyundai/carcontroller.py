@@ -454,6 +454,7 @@ class CarController():
           # get the lead distance from the Radar
           self.last_lead_distance = CS.lead_distance
           self.resume_cnt = 0
+          self.standstill_fault_reduce_timer += 1
         # when lead car starts moving, create 5 RES msgs
         # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
         # 프레임변화를 빼고 앞차 움직임과 동시에 누르도록 함
@@ -467,10 +468,10 @@ class CarController():
             if self.resume_cnt > 5:
               self.resume_cnt = 0
           self.standstill_fault_reduce_timer += 1
-        elif 150 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
+        elif 160 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
           self.cruise_gap_prev = CS.cruiseGapSet
           self.cruise_gap_set_init = 1
-        elif 150 < self.standstill_fault_reduce_timer and CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
+        elif 160 < self.standstill_fault_reduce_timer and CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
           self.cruise_gap_switch_timer += 1
           if self.cruise_gap_switch_timer > 100:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
