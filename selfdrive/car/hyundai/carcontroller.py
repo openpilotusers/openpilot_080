@@ -458,7 +458,6 @@ class CarController():
         elif self.res_switch_timer > 0:
           self.res_switch_timer -= 1
           self.standstill_fault_reduce_timer += 1
-        # when lead car starts moving, create 5 RES msgs
         # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
         elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
@@ -467,9 +466,11 @@ class CarController():
               self.resume_cnt = 0
               self.res_switch_timer = randint(10, 15)
           self.standstill_fault_reduce_timer += 1
+        # gap save
         elif 160 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
           self.cruise_gap_prev = CS.cruiseGapSet
           self.cruise_gap_set_init = 1
+        # gap adjust to 1 for fast start
         elif 160 < self.standstill_fault_reduce_timer and CS.cruiseGapSet != 1.0 and self.opkr_autoresume:
           self.cruise_gap_switch_timer += 1
           if self.cruise_gap_switch_timer > 100:
