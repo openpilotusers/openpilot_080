@@ -415,7 +415,6 @@ class Way:
         loop_must_break = False
         for n in way.way.nodes:
           if 'highway' in n.tags and n.tags['highway']=='speed_camera':
-            print('heading={}'.format(heading))
             if int(n.tags['direction']) > -0.1 and int(n.tags['direction']) < 360.1:
               direction = int(n.tags['direction']) - heading
               if direction < -180:
