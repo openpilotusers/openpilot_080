@@ -104,6 +104,7 @@ class SpdController():
         self.cruise_set_mode = int(self.params.get('CruiseStatemodeSelInit'))
 
         self.osm_spd_enable = False
+        self.osm_spd_enable_camera = False
         self.osm_spd_limit_offset = 0
 
     def reset(self):
@@ -292,11 +293,12 @@ class SpdController():
         dec_step_cmd = 1
 
         self.osm_spd_enable = Params().get("LimitSetSpeed", encoding='utf8') == "1"
+        self.osm_spd_enable_camera = Params().get("LimitSetSpeedCamera", encoding='utf8') == "1"
         self.osm_spd_limit_offset = int(Params().get("OpkrSpeedLimitOffset", encoding='utf8'))
         if self.long_curv_timer < long_wait_cmd:
             pass
         elif delta > 0:
-            if (int(round(CC.target_map_speed))+self.osm_spd_limit_offset) == int(CS.VSetDis) and self.osm_spd_enable:
+            if (((int(round(CC.target_map_speed))+self.osm_spd_limit_offset) == int(CS.VSetDis)) or ((int(round(CC.target_map_speed_camera))+self.osm_spd_limit_offset) == int(CS.VSetDis))) and (self.osm_spd_enable or self.osm_spd_enable_camera):
                 set_speed = int(CS.VSetDis) + 0
                 btn_type = Buttons.NONE
                 self.long_curv_timer = 0

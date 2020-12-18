@@ -128,6 +128,7 @@ class CarController():
     self.lead2_status = False
     self.cut_in_detection = 0
     self.target_map_speed = 0
+    self.target_map_speed_camera = 0
     self.v_set_dis_prev = 180
 
     self.cruise_gap = 0.0
@@ -203,6 +204,7 @@ class CarController():
     self.vRel2 = int(plan.vRel2 * 3.6 + 0.5) #EON Lead
     self.lead2_status = plan.status2
     self.target_map_speed = plan.targetSpeed
+    self.target_map_speed_camera = plan.targetSpeedCamera
     
     self.accActive = CS.acc_active
 

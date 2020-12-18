@@ -44,7 +44,7 @@ class Spdctrl(SpdController):
         
         if self.osm_enable:
             self.target_speed = self.target_speed_road
-        elif self.target_speed_camera < 11:
+        elif self.target_speed_camera < 30:
             self.osm_enable_camera = False
             self.target_speed = -self.osm_spdlimit_offset
         elif self.osm_enable_camera:
