@@ -510,6 +510,7 @@ class CarController():
         self.resume_cnt += 1
       else:
         self.resume_cnt = 0
+      # gap restore
       if self.dRel > 17 and self.vRel < 5 and self.cruise_gap_prev != CS.cruiseGapSet and self.cruise_gap_set_init == 1 and self.opkr_autoresume:
         self.cruise_gap_switch_timer += 1
         if self.cruise_gap_switch_timer > 50:
