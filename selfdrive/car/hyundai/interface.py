@@ -287,9 +287,6 @@ class CarInterface(CarInterfaceBase):
     elif self.CC.mode_change_timer and self.CS.out.cruiseState.modeSel == 3:
       events.add(EventName.modeChangeOneway)
 
-    if self.CC.gap_timer >= 60:
-      self.button_press_timer = 0
-
   # handle button presses
     for b in ret.buttonEvents:
       # do disable on button down
@@ -305,12 +302,17 @@ class CarInterface(CarInterfaceBase):
           events.events.remove(EventName.pcmDisable)
       elif self.CC.accActive:
         if b.type == ButtonType.gapAdjustCruise and not b.pressed:
-          self.button_press_timer += 1
-          if self.button_press_timer >= 2:
-            if self.CP.limitSpeedmanual == False:
-              self.CP.limitSpeedmanual = True
-            elif self.CP.limitSpeedmanual == True:
-              self.CP.limitSpeedmanual = False
+          if abs(self.CC.cruise_gap - self.CS.cruiseGapSet) >= 2:
+            self.button_press_timer = 2
+          if self.button_press_timer == 2:
+            if ret.vEgo > 9 and self.CC.cruise_gap_set_init == 0:
+              if self.CP.limitSpeedmanual == False:
+                self.CP.limitSpeedmanual = True
+              elif self.CP.limitSpeedmanual == True:
+                self.CP.limitSpeedmanual = False
+            self.button_press_timer = 0
+          else:
+            self.CP.limitSpeedmanual = False
             self.button_press_timer = 0
       elif not self.CC.longcontrol and ret.cruiseState.enabled:
         # do enable on decel button only
