@@ -460,11 +460,11 @@ class CarController():
           self.standstill_fault_reduce_timer += 1
         # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
         elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance:
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-            self.resume_cnt += 1
-            if self.resume_cnt > 5:
-              self.resume_cnt = 0
-              self.res_switch_timer = randint(10, 15)
+          can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
+          self.resume_cnt += 1
+          if self.resume_cnt > 5:
+            self.resume_cnt = 0
+            self.res_switch_timer = randint(10, 15)
           self.standstill_fault_reduce_timer += 1
         # gap save
         elif 160 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
