@@ -165,7 +165,7 @@ class CarState(CarStateBase):
     if ret.gasPressed and not self.gas_pressed:
       self.engaged_when_gas_was_pressed = self.pcm_acc_active
     if ((ret.gasPressed) or (self.gas_pressed and not ret.gasPressed)) and self.engaged_when_gas_was_pressed and ret.vEgo > self.smartspeed:
-      dat = messaging_arne.new_message('liveTrafficData')
+      dat = messaging.new_message('liveTrafficData')
       dat.liveTrafficData.speedLimitValid = True
       dat.liveTrafficData.speedLimit = ret.vEgo * 3.6
       self.pm.send('liveTrafficData', dat)
