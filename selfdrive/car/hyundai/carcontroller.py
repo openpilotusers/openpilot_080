@@ -19,6 +19,7 @@ from selfdrive.car.hyundai.spdctrl  import Spdctrl
 from common.params import Params
 import common.log as trace1
 import common.CTime1000 as tm
+from random import randint
 
 LaneChangeState = log.PathPlan.LaneChangeState
 VisualAlert = car.CarControl.HUDControl.VisualAlert
@@ -142,6 +143,7 @@ class CarController():
     self.standstill_status = 0
     self.standstill_status_timer = 0
     self.res_switch_timer = 0
+    self.res_switch_timer2 = 0
     self.gap_timer = 0
 
     self.lkas_button_on = True
@@ -165,11 +167,11 @@ class CarController():
     self.steerDeltaDown_timer = 0
 
     if CP.lateralTuning.which() == 'pid':
-      self.str_log2 = 'TUNE={:0.2f}/{:0.3f}/{:0.5f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kf)
+      self.str_log2 = 'T={:0.2f}/{:0.3f}/{:0.5f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kf)
     elif CP.lateralTuning.which() == 'indi':
-      self.str_log2 = 'TUNE={:03.1f}/{:03.1f}/{:03.1f}/{:03.1f}'.format(CP.lateralTuning.indi.innerLoopGain, CP.lateralTuning.indi.outerLoopGain, CP.lateralTuning.indi.timeConstant, CP.lateralTuning.indi.actuatorEffectiveness)
+      self.str_log2 = 'T={:03.1f}/{:03.1f}/{:03.1f}/{:03.1f}'.format(CP.lateralTuning.indi.innerLoopGain, CP.lateralTuning.indi.outerLoopGain, CP.lateralTuning.indi.timeConstant, CP.lateralTuning.indi.actuatorEffectiveness)
     elif CP.lateralTuning.which() == 'lqr':
-      self.str_log2 = 'TUNE={:04.0f}/{:05.3f}/{:06.4f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
+      self.str_log2 = 'T={:04.0f}/{:05.3f}/{:06.4f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
 
     if CP.spasEnabled:
       self.en_cnt = 0
@@ -388,7 +390,7 @@ class CarController():
     if frame % 2 and CS.mdps_bus: # send clu11 to mdps if it is not on bus 0
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-    str_log1 = 'CV={:03.0f}  TQ={:03.0f}  FR={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(self.model_speed), abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
+    str_log1 = 'CV={:03.0f}  TQ={:03.0f}  R={:03.0f}  ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(self.model_speed), abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
     trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
     if CS.out.cruiseState.modeSel == 0 and self.mode_change_switch == 3:
@@ -437,7 +439,7 @@ class CarController():
         self.leadcar_status = "-"
 
 
-      str_log2 = '모드={:s}  MDPS상태={:s}  LKAS버튼={:s}  크루즈갭={:1.0f}  선행차인식={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
+      str_log2 = 'MODE={:s}  MDPS={:s}  LKAS={:s}  CSG={:1.0f}  LEAD={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
       trace1.printf2( '{}'.format( str_log2 ) )
 
 
@@ -446,23 +448,23 @@ class CarController():
 
     if CS.out.cruiseState.standstill:
       self.standstill_status = 1
-      if self.opkr_autoresumeoption == 1:
+      if self.opkr_autoresumeoption == 1 and self.opkr_autoresume:
         # run only first time when the car stopped
-        if self.last_lead_distance == 0 or not self.opkr_autoresume:
+        if self.last_lead_distance == 0:
           # get the lead distance from the Radar
           self.last_lead_distance = CS.lead_distance
           self.resume_cnt = 0
         # when lead car starts moving, create 5 RES msgs
         # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
-        elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance and (frame - self.last_resume_frame) > 5 and self.opkr_autoresume:
-          self.res_switch_timer += 1
-          if self.res_switch_timer > 9: # 신호를 너무 빨리 주지말고 0.1초마다 한번씩 주기
+        # 프레임변화를 빼고 앞차 움직임과 동시에 누르도록 함
+        elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance:
+          self.res_switch_timer2 += 1
+          if self.res_switch_timer2 >= self.res_switch_timer:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-            self.res_switch_timer = 0
+            self.res_switch_timer = randint(8, 12)
+            self.res_switch_timer2 = 0
             self.resume_cnt += 1
-            # interval after 5 msgs
-            if self.resume_cnt > 4:
-              self.last_resume_frame = frame
+            if self.resume_cnt > 5:
               self.resume_cnt = 0
           self.standstill_fault_reduce_timer += 1
         elif 150 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
@@ -475,9 +477,9 @@ class CarController():
             self.cruise_gap_switch_timer = 0
         elif self.opkr_autoresume:
           self.standstill_fault_reduce_timer += 1
-      else:
+      elif self.opkr_autoresumeoption == 0 and self.opkr_autoresume:
         # run only first time when the car stopped
-        if self.last_lead_distance == 0 or not self.opkr_autoresume:
+        if self.last_lead_distance == 0:
           # get the lead distance from the Radar
           self.last_lead_distance = CS.lead_distance
           self.resume_cnt = 0
@@ -548,6 +550,7 @@ class CarController():
       self.v_set_dis_prev = 180
       self.last_resume_frame = frame
       self.res_switch_timer = 0
+      self.res_switch_timer2 = 0
       self.resume_cnt = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
