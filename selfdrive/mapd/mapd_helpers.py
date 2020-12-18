@@ -415,10 +415,18 @@ class Way:
         loop_must_break = False
         for n in way.way.nodes:
           if 'highway' in n.tags and n.tags['highway']=='speed_camera':
-            speed_ahead = int(n.tags['maxspeed']) / 3.6
-            speed_ahead_dist = max(0. , way_pts[count, 0] - 5.0)
-            loop_must_break = True
-            break
+            print('heading={}'.format(heading))
+            if int(n.tags['direction']) > -0.1 and int(n.tags['direction']) < 360.1:
+              direction = int(n.tags['direction']) - heading
+              if direction < -180:
+                direction = direction + 360
+              if direction > 180:
+                direction = direction - 360
+              if abs(direction) > 135:
+                speed_ahead = int(n.tags['maxspeed']) / 3.6
+                speed_ahead_dist = max(0. , way_pts[count, 0] - 5.0)
+                loop_must_break = True
+                break
           count += 1
         if loop_must_break: break
       except (KeyError, IndexError, ValueError):
