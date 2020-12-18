@@ -143,7 +143,6 @@ class CarController():
     self.standstill_status = 0
     self.standstill_status_timer = 0
     self.res_switch_timer = 0
-    self.res_switch_timer2 = 0
     self.gap_timer = 0
 
     self.lkas_button_on = True
@@ -454,19 +453,19 @@ class CarController():
           # get the lead distance from the Radar
           self.last_lead_distance = CS.lead_distance
           self.resume_cnt = 0
+          self.res_switch_timer = 0
+          self.standstill_fault_reduce_timer += 1
+        elif self.res_switch_timer > 0:
+          self.res_switch_timer -= 1
           self.standstill_fault_reduce_timer += 1
         # when lead car starts moving, create 5 RES msgs
         # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
-        # 프레임변화를 빼고 앞차 움직임과 동시에 누르도록 함
         elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance:
-          self.res_switch_timer2 += 1
-          if self.res_switch_timer2 >= self.res_switch_timer:
             can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
-            self.res_switch_timer = randint(8, 12)
-            self.res_switch_timer2 = 0
             self.resume_cnt += 1
             if self.resume_cnt > 5:
               self.resume_cnt = 0
+              self.res_switch_timer = randint(10, 15)
           self.standstill_fault_reduce_timer += 1
         elif 160 < self.standstill_fault_reduce_timer and self.cruise_gap_prev == 0 and self.opkr_autoresume: 
           self.cruise_gap_prev = CS.cruiseGapSet
@@ -551,7 +550,6 @@ class CarController():
       self.v_set_dis_prev = 180
       self.last_resume_frame = frame
       self.res_switch_timer = 0
-      self.res_switch_timer2 = 0
       self.resume_cnt = 0
 
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
