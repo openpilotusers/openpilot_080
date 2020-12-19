@@ -171,10 +171,10 @@ bool latcontrol( UIState *s, int touch_x, int touch_y ) {
     touched = true;
   }
 
-  if (s->scene.limitSpeedmanual == true || s->limit_set_speed == true) {
+  if (s->scene.limitSpeedmanual == true) {
     s->limit_set_speed = true;
     Params().write_db_value("LimitSetSpeed", "1", 1);
-  } else if (s->scene.limitSpeedmanual == false || s->limit_set_speed == false) {
+  } else if (s->scene.limitSpeedmanual == false) {
     s->limit_set_speed = false;
     Params().write_db_value("LimitSetSpeed", "0", 1);
   }
@@ -182,11 +182,9 @@ bool latcontrol( UIState *s, int touch_x, int touch_y ) {
   if ((control_button_clicked3(touch_x,touch_y)) && (s->scene.uilayout_sidebarcollapsed == true)) {
     if (s->limit_set_speed == false) {
       s->limit_set_speed = true;
-      s->scene.limitSpeedmanual = true;
       Params().write_db_value("LimitSetSpeed", "1", 1);
     } else if (s->limit_set_speed == true) {
       s->limit_set_speed = false;
-      s->scene.limitSpeedmanual = false;
       Params().write_db_value("LimitSetSpeed", "0", 1);
     }
     touched = true;

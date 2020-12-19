@@ -286,6 +286,7 @@ class CarInterface(CarInterfaceBase):
     elif self.CC.mode_change_timer and self.CS.out.cruiseState.modeSel == 3:
       events.add(EventName.modeChangeOneway)
 
+    self.CP.limitSpeedmanual = int(Params().get('LimitSetSpeed')) == 1
   # handle button presses
     for b in ret.buttonEvents:
       # do disable on button down
@@ -301,12 +302,10 @@ class CarInterface(CarInterfaceBase):
           events.events.remove(EventName.pcmDisable)
       elif self.CC.accActive:
         if b.type == ButtonType.gapAdjustCruise and not b.pressed:
-          if self.CS.cruiseGapSet == 2.0:
+          if self.CS.cruiseGapSet == 2.0 and int(Params().get('LimitSetSpeed')) == 0:
             if ret.vEgo > 13.8 and self.CC.cruise_gap_set_init == 0:
               self.CP.limitSpeedmanual = True
-            else:
-              self.CP.limitSpeedmanual = False
-          else:
+          elif int(Params().get('LimitSetSpeed')) == 1:
             self.CP.limitSpeedmanual = False
       elif not self.CC.longcontrol and ret.cruiseState.enabled:
         # do enable on decel button only
