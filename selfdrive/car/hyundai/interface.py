@@ -301,7 +301,7 @@ class CarInterface(CarInterfaceBase):
           events.events.remove(EventName.pcmDisable)
       elif self.CC.accActive:
         if b.type == ButtonType.gapAdjustCruise and not b.pressed:
-          if abs(self.CC.cruise_gap - self.CS.cruiseGapSet) >= 2:
+          if abs(self.CC.cruise_gap - self.CS.cruiseGapSet) == 2:
             if ret.vEgo > 9 and self.CC.cruise_gap_set_init == 0:
               self.CP.limitSpeedmanual = True
           else:
