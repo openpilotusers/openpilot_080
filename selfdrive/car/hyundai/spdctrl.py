@@ -175,7 +175,7 @@ class Spdctrl(SpdController):
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 15, 1)
             elif lead_objspd > 0 and int(CS.clu_Vanz)+lead_objspd >= int(CS.VSetDis) and int(CS.clu_Vanz*0.4) < dRel < 149 and ((int(round(self.target_speed)) > int(CS.VSetDis) and self.target_speed != 0) or self.target_speed == 0):
                 self.seq_step_debug = "SS>VS,+1"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 80, 1)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 50, 1)
             elif CS.clu_Vanz > 80 and lead_objspd < 0 and (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and int(CS.clu_Vanz) >= dRel*1.7 and 1 < dRel < 149: # 유지거리 범위 외 감속 조건 앞차 감속중 현재속도/2 아래로 거리 좁혀졌을 때 상대속도에 따라 점진적 감소
                 self.seq_step_debug = "SS>VS,v>80,-1"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, max(15, 50+(lead_objspd*2)), -1)
@@ -196,7 +196,7 @@ class Spdctrl(SpdController):
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 15, 5)
             elif d_delta == 0 and lead_objspd == 0 and self.cruise_set_speed_kph > int(CS.VSetDis) and dRel > 149 and ((int(round(self.target_speed)) > int(CS.VSetDis) and self.target_speed != 0) or self.target_speed == 0):
                 self.seq_step_debug = "점진가속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 80, 1)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 50, 1)
             elif lead_objspd == 0 and int(CS.clu_Vanz) == 0 and dRel <= 6:
                 self.seq_step_debug = "출발대기"
             else:
@@ -207,7 +207,7 @@ class Spdctrl(SpdController):
         elif lead_objspd < 0 and int(CS.clu_Vanz * 0.5) >= dRel > 1:
             self.cut_in = False
             self.seq_step_debug = "일반감속,-1"
-            lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 80, -1)
+            lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 50, -1)
         else:
             self.cut_in = False
             self.seq_step_debug = "속도유지"
