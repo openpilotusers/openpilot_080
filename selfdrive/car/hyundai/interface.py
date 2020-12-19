@@ -20,7 +20,6 @@ class CarInterface(CarInterfaceBase):
 
     self.blinker_status = 0
     self.blinker_timer = 0
-    self.button_press_timer = 0
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -303,17 +302,10 @@ class CarInterface(CarInterfaceBase):
       elif self.CC.accActive:
         if b.type == ButtonType.gapAdjustCruise and not b.pressed:
           if abs(self.CC.cruise_gap - self.CS.cruiseGapSet) >= 2:
-            self.button_press_timer = 2
-          if self.button_press_timer == 2:
             if ret.vEgo > 9 and self.CC.cruise_gap_set_init == 0:
-              if self.CP.limitSpeedmanual == False:
-                self.CP.limitSpeedmanual = True
-              elif self.CP.limitSpeedmanual == True:
-                self.CP.limitSpeedmanual = False
-            self.button_press_timer = 0
+              self.CP.limitSpeedmanual = True
           else:
             self.CP.limitSpeedmanual = False
-            self.button_press_timer = 0
       elif not self.CC.longcontrol and ret.cruiseState.enabled:
         # do enable on decel button only
         if b.type == ButtonType.decelCruise and not b.pressed:
