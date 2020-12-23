@@ -49,6 +49,7 @@ class CarState(CarStateBase):
     self.steer_anglecorrection = int(Params().get('OpkrSteerAngleCorrection')) * 0.1
 
     self.sm = messaging.SubMaster(['liveMapData'])
+    self.pm = messaging.PubMaster(['liveTrafficData'])
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
     cp_sas = cp2 if self.sas_bus else cp
