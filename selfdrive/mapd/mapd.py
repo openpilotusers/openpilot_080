@@ -280,7 +280,7 @@ class MapsdThread(LoggerThread):
             fix_ok = gps.flags & 1
             self.logger.debug("fix_ok = %s" % str(fix_ok))
 
-            if gps.accuracy > 2.5:
+            if gps.accuracy > 3.5:
                 if gps.accuracy > 5.0:
                     if not speedLimittrafficvalid:
                         if had_good_gps:
@@ -348,7 +348,7 @@ class MapsdThread(LoggerThread):
                             radii = np.nan_to_num(circles[:, 2])
                             radii[abs(radii) < 15.] = 10000
 
-                            if cur_way.way.tags['highway'] == 'trunk' or cur_way.way.tags['highway'] == 'motorway_link':
+                            if cur_way.way.tags['highway'] == 'trunk_link'  or cur_way.way.tags['highway'] == 'motorway_link':
                                 radii = radii*1.6 # https://media.springernature.com/lw785/springer-static/image/chp%3A10.1007%2F978-3-658-01689-0_21/MediaObjects/298553_35_De_21_Fig65_HTML.gif
                             elif cur_way.way.tags['highway'] == 'motorway':
                                 radii = radii*2.8
@@ -395,6 +395,7 @@ class MapsdThread(LoggerThread):
             if cur_way is not None:
                 dat.liveMapData.wayId = cur_way.id
                 self.sharedParams['osm_way_id'] = cur_way.id
+
                 # Speed limit
                 max_speed = cur_way.max_speed(heading)
                 max_speed_ahead = None

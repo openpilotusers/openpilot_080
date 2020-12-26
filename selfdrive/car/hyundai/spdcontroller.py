@@ -4,7 +4,6 @@ import numpy as np
 from cereal import car, log
 import cereal.messaging as messaging
 
-import cereal.messaging as messaging
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.planner import calc_cruise_accel_limits
 from selfdrive.controls.lib.speed_smoother import speed_smoother

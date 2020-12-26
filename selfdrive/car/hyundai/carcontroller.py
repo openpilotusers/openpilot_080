@@ -15,6 +15,7 @@ from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 # speed controller
 from selfdrive.car.hyundai.spdcontroller  import SpdController
 from selfdrive.car.hyundai.spdctrl  import Spdctrl
+from selfdrive.car.hyundai.spdctrlRelaxed  import SpdctrlRelaxed
 
 from common.params import Params
 import common.log as trace1
@@ -115,7 +116,12 @@ class CarController():
 
     self.timer1 = tm.CTime1000("time")
     
-    self.SC = Spdctrl()
+    if int(self.params.get('OpkrVariableCruiseProfile')) == 0:
+      self.SC = Spdctrl()
+    elif int(self.params.get('OpkrVariableCruiseProfile')) == 1:
+      self.SC = SpdctrlRelaxed()
+    else:
+      self.SC = Spdctrl()
     
     self.model_speed = 0
     self.model_sum = 0
@@ -149,20 +155,17 @@ class CarController():
     self.scc_live = not CP.radarOffCan
     self.accActive = False
 
-    self.angle_differ_range = [0, 45]
-    self.steerMax_range = [int(self.params.get('SteerMaxBaseAdj')), SteerLimitParams.STEER_MAX]
-    self.steerDeltaUp_range = [int(self.params.get('SteerDeltaUpAdj')), 5]
-    self.steerDeltaDown_range = [int(self.params.get('SteerDeltaDownAdj')), 10]
+    self.model_speed_range = [30, 90, 255, 300]
+    self.steerMax_range = [SteerLimitParams.STEER_MAX, int(self.params.get('SteerMaxBaseAdj')), int(self.params.get('SteerMaxBaseAdj')), 0]
+    self.steerDeltaUp_range = [5, int(self.params.get('SteerDeltaUpAdj')), int(self.params.get('SteerDeltaUpAdj')), 0]
+    self.steerDeltaDown_range = [10, int(self.params.get('SteerDeltaDownAdj')), int(self.params.get('SteerDeltaDownAdj')), 0]
 
     self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
     self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
     self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
-    self.steerMax_prev = int(self.params.get('SteerMaxBaseAdj'))
-    self.steerDeltaUp_prev = int(self.params.get('SteerDeltaUpAdj'))
-    self.steerDeltaDown_prev = int(self.params.get('SteerDeltaDownAdj'))
-    self.steerMax_timer = 0
-    self.steerDeltaUp_timer = 0
-    self.steerDeltaDown_timer = 0
+
+    self.variable_steer_max = int(self.params.get('OpkrVariableSteerMax')) == 1
+    self.variable_steer_delta = int(self.params.get('OpkrVariableSteerDelta')) == 1
 
     if CP.lateralTuning.which() == 'pid':
       self.str_log2 = 'T={:0.2f}/{:0.3f}/{:0.5f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kf)
@@ -212,63 +215,27 @@ class CarController():
     self.outScale = path_plan.outputScale
     self.vCruiseSet = path_plan.vCruiseSet
 
-    self.angle_steers_des = path_plan.angleSteers - path_plan.angleOffset
-    self.angle_steers = CS.out.steeringAngle
-    self.angle_diff = abs(self.angle_steers_des) - abs(self.angle_steers)
-
-    if abs(self.outScale) >= 1 and CS.out.vEgo > 8:
-      self.steerMax_prev = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
-      if self.steerMax_prev > self.steerMax:
-        self.steerMax = self.steerMax_prev
-      self.steerDeltaUp_prev = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
-      if self.steerDeltaUp_prev > self.steerDeltaUp:
-        self.steerDeltaUp = self.steerDeltaUp_prev
-      self.steerDeltaDown_prev = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
-      if self.steerDeltaDown_prev > self.steerDeltaDown:
-        self.steerDeltaDown = self.steerDeltaDown_prev
-
-    #if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
-    #  self.steerMax_timer += 1
-    #  self.steerDeltaUp_timer += 1
-    #  self.steerDeltaDown_timer += 1
-    #  if self.steerMax_timer > 5:
-    #    self.steerMax += int(CS.out.vEgo//2)
-    #    self.steerMax_timer = 0
-    #    if self.steerMax >= int(self.params.get('SteerMaxAdj')):
-    #      self.steerMax = int(self.params.get('SteerMaxAdj'))
-    #  if self.steerDeltaUp_timer > 50:
-    #    self.steerDeltaUp += 1
-    #    self.steerDeltaUp_timer = 0
-    #    if self.steerDeltaUp >= 7:
-    #      self.steerDeltaUp = 7
-    #  if self.steerDeltaDown_timer > 25:
-    #    self.steerDeltaDown += 1
-    #    self.steerDeltaDown_timer = 0
-    #    if self.steerDeltaDown >= 15:
-    #      self.steerDeltaDown = 15
+    if CS.out.vEgo > 8:
+      if self.variable_steer_max:
+        self.steerMax = interp(int(abs(self.model_speed)), self.model_speed_range, self.steerMax_range)
+      else:
+        self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
+      if self.variable_steer_delta:
+        self.steerDeltaUp = interp(int(abs(self.model_speed)), self.model_speed_range, self.steerDeltaUp_range)
+        self.steerDeltaDown = interp(int(abs(self.model_speed)), self.model_speed_range, self.steerDeltaDown_range)
+      else:
+        self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
+        self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
     else:
-      self.steerMax_timer += 1
-      self.steerDeltaUp_timer += 1
-      self.steerDeltaDown_timer += 1
-      if self.steerMax_timer > 20:
-        self.steerMax -= 5
-        self.steerMax_timer = 0
-        if self.steerMax < int(self.params.get('SteerMaxBaseAdj')):
-          self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
-      if self.steerDeltaUp_timer > 100:
-        self.steerDeltaUp -= 1
-        self.steerDeltaUp_timer = 0
-        if self.steerDeltaUp <= int(self.params.get('SteerDeltaUpAdj')):
-          self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
-      if self.steerDeltaDown_timer > 50:
-        self.steerDeltaDown -= 1
-        self.steerDeltaDown_timer = 0
-        if self.steerDeltaDown <= int(self.params.get('SteerDeltaDownAdj')):
-          self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
+      self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
+      self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
+      self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
 
-    param.STEER_MAX = min(SteerLimitParams.STEER_MAX, self.steerMax)
-    param.STEER_DELTA_UP = max(int(self.params.get('SteerDeltaUpAdj')), self.steerDeltaUp)
-    param.STEER_DELTA_DOWN = max(int(self.params.get('SteerDeltaDownAdj')), self.steerDeltaDown)
+    param.STEER_MAX = min(SteerLimitParams.STEER_MAX, self.steerMax) # variable steermax
+    param.STEER_DELTA_UP = max(int(self.params.get('SteerDeltaUpAdj')), self.steerDeltaUp) # variable deltaUp
+    param.STEER_DELTA_DOWN = max(int(self.params.get('SteerDeltaDownAdj')), self.steerDeltaDown) # variable deltaDown
+    #param.STEER_DELTA_UP = SteerLimitParams.STEER_DELTA_UP # fixed deltaUp
+    #param.STEER_DELTA_DOWN = SteerLimitParams.STEER_DELTA_DOWN # fixed deltaDown
 
     # Steering Torque
     if 0 <= self.driver_steering_torque_above_timer < 100:
@@ -331,7 +298,7 @@ class CarController():
     self.apply_accel_last = apply_accel
     self.apply_steer_last = apply_steer
 
-    if CS.acc_active and CS.lead_distance > 149 and self.dRel < ((CS.out.vEgo * CV.MS_TO_KPH)+3) and self.vRel < -5 and CS.out.vEgo > 7:
+    if CS.acc_active and CS.lead_distance > 149 and self.dRel < ((CS.out.vEgo * CV.MS_TO_KPH)+5) and self.vRel < -5 and CS.out.vEgo > 7:
       self.need_brake_timer += 1
       if self.need_brake_timer > 50:
         self.need_brake = True
@@ -433,10 +400,8 @@ class CarController():
       else:
         self.leadcar_status = "-"
 
-
       str_log2 = 'MODE={:s}  MDPS={:s}  LKAS={:s}  CSG={:1.0f}  LEAD={:s}'.format(self.steer_mode, self.mdps_status, self.lkas_switch, self.cruise_gap, self.leadcar_status)
       trace1.printf2( '{}'.format( str_log2 ) )
-
 
     if pcm_cancel_cmd and self.longcontrol:
       can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
@@ -454,7 +419,7 @@ class CarController():
         elif self.res_switch_timer > 0:
           self.res_switch_timer -= 1
           self.standstill_fault_reduce_timer += 1
-        # standstill 진입하자마자 바로 누르지 말고 최소 1초의 딜레이를 주기 위함
+        # at least 1 sec delay after entering the standstill
         elif 100 < self.standstill_fault_reduce_timer and CS.lead_distance != self.last_lead_distance:
           can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
           self.resume_cnt += 1
@@ -515,27 +480,6 @@ class CarController():
       elif self.cruise_gap_prev == CS.cruiseGapSet and self.opkr_autoresume:
         self.cruise_gap_set_init = 0
         self.cruise_gap_prev = 0
-      #if CS.out.vEgo > 8 and self.lead2_status and self.dRel - self.dRel2 > 3 and self.cut_in_detection == 0 and self.cruise_gap_prev2 == 0:
-      #  self.cut_in_detection = 1
-      #  self.cruise_gap_prev2 = CS.cruiseGapSet
-      #elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet != 1.0:
-      #  self.cruise_gap_switch_timer2 += 1
-      #  if self.cruise_gap_switch_timer2 > 150:
-      #    can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
-      #    self.cruise_gap_switch_timer2 = 0
-      #elif CS.out.vEgo > 8 and self.cut_in_detection == 1 and CS.cruiseGapSet == 1.0:
-      #  self.cruise_gap_switch_timer2 += 1
-      #  if self.cruise_gap_switch_timer2 > 600:
-      #    if self.cruise_gap_prev2 != CS.cruiseGapSet:
-      #      self.cruise_gap_switch_timer3 += 1
-      #      if self.cruise_gap_switch_timer3 > 50:
-      #        can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.GAP_DIST, clu11_speed))
-      #        self.cruise_gap_switch_timer3 = 0
-      #elif self.cruise_gap_prev2 == CS.cruiseGapSet:
-      #  self.cut_in_detection == 0
-      #  self.cruise_gap_prev2 = 0
-      #  self.cruise_gap_switch_timer2 = 0
-      #  self.cruise_gap_switch_timer3 = 0
     
     if CS.out.brakeLights and CS.out.vEgo == 0 and not CS.acc_active:
       self.standstill_status_timer += 1

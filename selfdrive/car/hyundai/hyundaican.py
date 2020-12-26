@@ -50,7 +50,7 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   elif car_fingerprint in [CAR.OPTIMA, CAR.OPTIMA_HEV, CAR.CADENZA, CAR.CADENZA_HEV]:
     values["CF_Lkas_LdwsActivemode"] = 0
     
-  ldws_car_fix = int(Params().get('LdwsCarFix')) == "1"
+  ldws_car_fix = int(Params().get('LdwsCarFix')) == 1
   if ldws_car_fix:
   	values["CF_Lkas_LdwsOpt_USM"] = 3
 
