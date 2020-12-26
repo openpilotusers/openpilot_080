@@ -88,9 +88,9 @@ class LanePlanner:
       self.l_poly[3] += CAMERA_OFFSET_A + lean_offset
       self.r_poly[3] += CAMERA_OFFSET_A + lean_offset
 
-    elif (int(Params().get('LeftCurvOffsetAdj')) != 0 or int(Params().get('RightCurvOffsetAdj')) != 0) and v_ego > 8:
-      leftCurvOffsetAdj = int(Params().get('LeftCurvOffsetAdj'))
-      rightCurvOffsetAdj = int(Params().get('RightCurvOffsetAdj'))
+    elif (int(Params().get("LeftCurvOffsetAdj", encoding='utf8')) != 0 or int(Params().get("RightCurvOffsetAdj", encoding='utf8')) != 0) and v_ego > 8:
+      leftCurvOffsetAdj = int(Params().get("LeftCurvOffsetAdj", encoding='utf8'))
+      rightCurvOffsetAdj = int(Params().get("RightCurvOffsetAdj", encoding='utf8'))
       if curvature > 0.0008 and leftCurvOffsetAdj < 0 and (self.l_poly[3] + self.r_poly[3]) >= 0: # left curve
         if Poly_differ > 0.6:
           Poly_differ = 0.6          
